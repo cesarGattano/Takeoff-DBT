@@ -1,0 +1,115 @@
+version: 2
+
+models:
+  - name: dim_client
+    description: "{{ doc('dim_client') }}"
+    columns:
+      - name: client_id
+        description: "Identifiant unique du client"
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: "Adresse email du client"
+        tests:
+          - unique
+          - not_null
+      - name: nom_complet
+        description: "Nom et prénom concaténés"
+      - name: age
+        description: "Age calculé à partir de la date de naissance"
+      - name: segment
+        description: "Segment commercial : Premium ou Standard"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Premium', 'Standard']
+      - name: ville
+        description: "Ville de résidence actuelle"
+      - name: date_inscription
+        description: "Date d'inscription sur le site"
+      - name: actif
+        description: "Indique si le compte client est actif"
+
+  - name: dim_produit
+    description: "{{ doc('dim_produit') }}"
+    columns:
+      - name: produit_id
+        description: "Identifiant unique du produit"
+        tests:
+          - unique
+          - not_null
+      - name: categorie
+        description: "Catégorie principale du produit"
+      - name: sous_categorie
+        description: "Sous-catégorie du produit"
+      - name: marque
+        description: "Marque du produit"
+      - name: prix_unitaire
+        description: "Prix de vente unitaire TTC"
+        tests:
+          - not_null
+      - name: cout_achat
+        description: "Coût d'achat unitaire"
+      - name: marge_brute
+        description: "Marge brute = prix_unitaire - cout_achat"
+      - name: taux_marge
+        description: "Taux de marge en pourcentage"
+      - name: actif
+        description: "Indique si le produit est toujours au catalogue"
+
+  - name: dim_date
+    description: "{{ doc('dim_date') }}"
+    columns:
+      - name: date_id
+        description: "Clé de substitution au format YYYYMMDD"
+        tests:
+          - unique
+          - not_null
+      - name: date_jour
+        description: "Date complète"
+        tests:
+          - unique
+          - not_null
+      - name: mois_nom
+        description: "Nom du mois en français"
+      - name: trimestre
+        description: "Numéro du trimestre (1 à 4)"
+      - name: est_weekend
+        description: "True si samedi ou dimanche"
+
+  - name: dim_statut_commande
+    description: "{{ doc('dim_statut_commande') }}"
+    columns:
+      - name: statut_id
+        description: "Identifiant unique du statut"
+        tests:
+          - unique
+          - not_null
+      - name: statut
+        description: "Libellé du statut"
+        tests:
+          - unique
+          - not_null
+      - name: description
+        description: "Description détaillée du statut"
+      - name: est_final
+        description: "True si le statut est terminal (Livré)"
+
+  - name: dim_canal
+    description: "{{ doc('dim_canal') }}"
+    columns:
+      - name: canal_id
+        description: "Identifiant unique du canal"
+        tests:
+          - unique
+          - not_null
+      - name: canal
+        description: "Libellé du canal"
+        tests:
+          - unique
+          - not_null
+      - name: canal_description
+        description: "Description longue du canal"
+      - name: est_payant
+        description: "True si le canal est payant (Pub)"

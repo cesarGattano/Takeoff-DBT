@@ -1,0 +1,31 @@
+produit_id,nom,description,categorie,sous_categorie,marque,prix_unitaire,cout_achat,stock,actif
+1,Smartphone X12,Smartphone 6.5 pouces 128Go,Électronique,Téléphones,TechPro,599.99,320.00,150,true
+2,Laptop Ultra 15,Ordinateur portable 15 pouces 512Go SSD,Électronique,Ordinateurs,TechPro,1099.99,620.00,75,true
+3,Casque BT Pro,Casque Bluetooth réduction de bruit,Électronique,Audio,SoundMax,149.99,65.00,200,true
+4,Montre Connect,Montre connectée GPS sport,Électronique,Wearables,TechPro,249.99,110.00,120,true
+5,T-shirt Basic,T-shirt coton bio col rond,Vêtements,Hauts,ModeSport,19.99,6.00,500,true
+6,Jean Slim,Jean slim stretch délavé,Vêtements,Bas,ModeSport,59.99,22.00,300,true
+7,Veste Running,Veste imperméable légère,Vêtements,Sport,SportElite,89.99,35.00,180,true
+8,Sneakers Urban,Chaussures de ville confortables,Vêtements,Chaussures,SportElite,119.99,48.00,250,true
+9,Roman Bestseller,Roman policier auteur français,Livres,Romans,ÉdiFrance,14.99,4.50,400,true
+10,Guide Cuisine,Guide de cuisine méditerranéenne,Livres,Cuisine,ÉdiFrance,24.99,8.00,220,true
+11,Cahier A5,Cahier 200 pages papier recyclé,Papeterie,Cahiers,PaperShop,6.99,1.80,800,true
+12,Stylo Premium,Stylo bille encre gel lot de 5,Papeterie,Stylos,PaperShop,12.99,3.50,600,true
+13,Cafetière Expresso,Machine à café expresso 15 bars,Maison,Cuisine,HomeStyle,199.99,90.00,100,true
+14,Aspirateur Robot,Robot aspirateur programmable,Maison,Électroménager,HomeStyle,349.99,160.00,60,true
+15,Lampe Bureau LED,Lampe de bureau LED réglable,Maison,Éclairage,HomeStyle,49.99,18.00,280,true
+16,Tapis Yoga,Tapis de yoga antidérapant 6mm,Sport,Fitness,SportElite,34.99,12.00,350,true
+17,Gourde Inox,Gourde isotherme 750ml,Sport,Accessoires,SportElite,29.99,9.00,450,true
+18,Vélo Électrique,Vélo électrique urbain 250W,Sport,Vélos,CycloPlus,1299.99,750.00,25,true
+19,Tablette 10,Tablette 10 pouces 64Go WiFi,Électronique,Tablettes,TechPro,329.99,160.00,90,true
+20,Écouteurs Sans Fil,Écouteurs true wireless IPX5,Électronique,Audio,SoundMax,79.99,28.00,300,true
+21,Short Sport,Short respirant séchage rapide,Vêtements,Sport,SportElite,29.99,9.50,400,true
+22,Sac à Dos,Sac à dos 30L imperméable,Accessoires,Bagagerie,TravelPro,69.99,25.00,200,true
+23,Portefeuille Cuir,Portefeuille fin cuir véritable,Accessoires,Maroquinerie,TravelPro,44.99,15.00,180,true
+24,Puzzle 1000,Puzzle 1000 pièces paysage,Loisirs,Puzzles,FunGame,22.99,7.00,250,true
+25,Jeu de Société,Jeu de stratégie 2-6 joueurs,Loisirs,Jeux,FunGame,39.99,14.00,150,true
+26,Crème Hydratante,Crème visage hydratante SPF30,Beauté,Soins,NaturaPure,32.99,10.00,320,true
+27,Shampooing Bio,Shampooing naturel cheveux secs,Beauté,Cheveux,NaturaPure,12.99,3.80,450,true
+28,Parfum Essence,Eau de toilette 50ml,Beauté,Parfums,LuxScent,64.99,22.00,140,true
+29,Clé USB 64Go,Clé USB 3.0 64Go ultra rapide,Électronique,Stockage,TechPro,19.99,5.50,500,true
+30,Disque Dur Ext,Disque dur externe 1To USB3,Électronique,Stockage,TechPro,89.99,38.00,110,false

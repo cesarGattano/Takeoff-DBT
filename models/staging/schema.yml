@@ -1,0 +1,94 @@
+version: 2
+
+models:
+  - name: stg_clients
+    description: "Données clients nettoyées et typées"
+    columns:
+      - name: client_id
+        description: "Identifiant unique du client"
+        tests:
+          - unique
+          - not_null
+      - name: email
+        description: "Email du client"
+        tests:
+          - unique
+          - not_null
+      - name: segment
+        description: "Segment client"
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Premium', 'Standard']
+
+  - name: stg_produits
+    description: "Données produits nettoyées et typées"
+    columns:
+      - name: produit_id
+        tests:
+          - unique
+          - not_null
+      - name: prix_unitaire
+        tests:
+          - not_null
+      - name: categorie
+        tests:
+          - not_null
+
+  - name: stg_commandes
+    description: "Données commandes nettoyées et typées"
+    columns:
+      - name: commande_id
+        tests:
+          - unique
+          - not_null
+      - name: client_id
+        tests:
+          - not_null
+      - name: statut
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Livré', 'Annulé', 'Retourné', 'En cours']
+      - name: canal
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SEO', 'Email', 'Pub', 'Direct']
+
+  - name: stg_lignes_commande
+    description: "Lignes de commande nettoyées et typées"
+    columns:
+      - name: ligne_id
+        tests:
+          - unique
+          - not_null
+      - name: commande_id
+        tests:
+          - not_null
+      - name: produit_id
+        tests:
+          - not_null
+      - name: quantite
+        tests:
+          - not_null
+
+  - name: stg_visites
+    description: "Données de visites nettoyées et typées"
+    columns:
+      - name: visite_id
+        tests:
+          - unique
+          - not_null
+      - name: client_id
+        tests:
+          - not_null
+      - name: canal
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['SEO', 'Email', 'Pub', 'Direct']
