@@ -8,18 +8,24 @@ La société fictive **VenteRapide** exploite une boutique en ligne généralist
 Cet entrepôt centralise les données de commandes, produits, clients, visites et retours.
 
 ## Stack technique
-| Composant | Technologie |
-|-----------|-------------|
-| Base de données | PostgreSQL 16 |
-| Transformation | dbt 1.11 |
-| Modélisation | Schéma en étoile (Kimball) |
-| Environnement | Linux / WSL2 |
+| Composant       | Technologie                |
+| --------------- | -------------------------- |
+| Base de données | PostgreSQL 16              |
+| Transformation  | dbt 1.11                   |
+| Modélisation    | Schéma en étoile (Kimball) |
+| Environnement   | Linux / WSL2               |
 
 ## Prérequis
-- PostgreSQL installé et démarré
+- PostgreSQL démarré via docker compose: `docker compose up -d`
 - dbt installé : `pip install dbt-postgres`
 
 ## Installation
+
+### 0. Démarrer PostgreSQL
+```bash
+cp .env.example .env
+docker compose up -d
+```
 
 ### 1. Dézipper le projet
 ```bash
@@ -30,11 +36,15 @@ cd datawarehouse_e6
 ### 2. Créer la base de données PostgreSQL
 
 ```bash
-sudo -u postgres psql -c "CREATE DATABASE datawarehouse_e6;"
-sudo -u postgres psql -c "CREATE USER dbt_user WITH PASSWORD 'dbt_password';"
-sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE datawarehouse_e6 TO dbt_user;"
-sudo -u postgres psql -d datawarehouse_e6 -c "GRANT ALL ON SCHEMA public TO dbt_user;"
-sudo -u postgres psql -d datawarehouse_e6 -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO dbt_user;"
+docker exec -it takeoff-dbt-db psql -U ${POSTGRES_USER} -d postgres -c "CREATE USER dbt_user WITH PASSWORD 'dbt_password';"
+docker exec -it takeoff-dbt-db psql -U ${POSTGRES_USER} -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE datawarehouse_e6 TO dbt_user;"
+docker exec -it takeoff-dbt-db psql -U ${POSTGRES_USER} -d datawarehouse_e6 -c "GRANT ALL ON SCHEMA public TO dbt_user;"
+docker exec -it takeoff-dbt-db psql -U ${POSTGRES_USER} -d datawarehouse_e6 -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO dbt_user;"
+```
+
+Vérification:
+```bash
+docker exec -u postgres takeoff-dbt-db psql -U ${POSTGRES_USER} -l
 ```
 
 ### 3. Configurer le profil dbt
@@ -70,24 +80,26 @@ dbt test        # lance les 66 tests
 
 ## Structure du projet
 
-seeds/  
-raw_clients.csv  
-raw_produits.csv  
-raw_commandes.csv  
-raw_lignes_commande.csv  
-raw_visites.csv  
-models/
-staging/                 ← nettoyage et typage des données brutes  
-dimensions/              ← dim_client, dim_produit, dim_date, dim_canal, dim_statut_commande  
-facts/                   ← fact_commandes, fact_visites  
-snapshots/  
-scd_client.sql           ← SCD type 2 sur dim_client (ville, code_postal, segment)  
+```
+seeds/...
+... raw_clients.csv  
+... raw_produits.csv  
+... raw_commandes.csv  
+... raw_lignes_commande.csv  
+... raw_visites.csv  
+models/...
+... staging/        ← nettoyage et typage des données brutes  
+... dimensions/     ← dim_client, dim_produit, dim_date, dim_canal, dim_statut_commande  
+... facts/          ← fact_commandes, fact_visites  
+snapshots/...  
+... scd_client.sql  ← SCD type 2 sur dim_client (ville, code_postal, segment)  
+```
 
 ## Utilisateurs PostgreSQL
-| Utilisateur | Droits | Usage |
-|-------------|--------|-------|
-| postgres | Superadmin | Administration |
-| dbt_user | Lecture/écriture | Pipeline dbt |
+| Utilisateur | Droits           | Usage          |
+| ----------- | ---------------- | -------------- |
+| postgres    | Superadmin       | Administration |
+| dbt_user    | Lecture/écriture | Pipeline dbt   |
 
 ## Documentation interactive
 ```bash
