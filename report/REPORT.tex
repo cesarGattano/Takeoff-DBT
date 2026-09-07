@@ -1,0 +1,116 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+\usepackage{times}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    prebreak=\raisebox{0ex}[0ex][0ex]{\dots},
+    breakatwhitespace=true,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+\newcommand{\ia}[1]{\textcolor{MidnightBlue}{#1}}
+\newcommand{\techno}[1]{\texttt{\textcolor{Sienna}{#1}}}
+\newcommand{\minio}{\techno{MinIO}}
+\newcommand{\docker}{\techno{Docker}}
+\newcommand{\openmetadata}{\techno{OpenMetadata}}
+\newcommand{\airflow}{\techno{Airflow}}
+\newcommand{\boto}{\techno{Boto3}}
+
+\newcommand{\fichier}[1]{\colorbox{LightGrey}{\texttt{\textcolor{FireBrick}{#1}}}}
+\newcommand{\bucket}[1]{\colorbox{LightGrey}{\texttt{\textcolor{DodgerBlue}{#1}}}}
+\newcommand{\role}[1]{\colorbox{LightGrey}{\texttt{\textcolor{ForestGreen}{#1}}}}
+
+
+% Penses-bêtes
+% % % % %
+% FIGURE
+% \begin{figure}[p]
+%     \centering
+%     \includegraphics[width=\textwidth]{../diagrams/DB_schema.drawio.png}
+%     \caption{Diagramme du schéma de base de données}
+%     \label{fig:db_schema}
+% \end{figure}
+
+% CODE
+% \begin{lstlisting}[language=bash]
+% mc admin policy create local data-engineer-policy policies/DataEngineerReadWrite.json
+% mc admin policy attach local data-engineer-policy --user data-engineer
+% \end{lstlisting}
+% \begin{lstlisting}[language=python]
+% mc admin policy create local data-engineer-policy policies/DataEngineerReadWrite.json
+% mc admin policy attach local data-engineer-policy --user data-engineer
+% \end{lstlisting}
+
+\begin{document}
+
+\title{Modification d'un entrepôt de données}
+\author{Gattano César}
+\maketitle
+
+\section*{Avant-propos}
+
+Ce rapport a été rédigé en usant de l'intelligence artificielle.
+Par soucis de transparence, les parties purement rédigées par l'IA sont
+signalées via une couleur de police bleu sombre.
+L'auteur certifie que l'ensemble du contenu générée par l'IA a été revu et validé par ses
+soins.
+
+Voici un exemple: \ia{Je suis un assistant IA conçu pour vous aider dans la rédaction
+    de votre rapport.
+    Je génère du texte structuré et cohérent, que vous pouvez ensuite affiner.
+    Mon rôle est de vous fournir un cadre de travail, tout en vous laissant le contrôle final.
+    Ensemble, nous pouvons créer un document clair et professionnel.
+}
+
+En outre, l'auteur indique que l'IA générative a également été utilisée en
+auto-complétion durant la rédaction de ce rapport. Cette fonctionnalité ayant
+été utilisée tout au long du rapport, aucun indicateur n'a été mis en place
+pour souligner cet aspect, si ce n'est cette déclaration.
+
+\tableofcontents
+
+\pagebreak
+
+\section{Introduction}
+
+
+
+\end{document}
