@@ -17,6 +17,9 @@
 \usepackage[svgnames]{xcolor}
 \usepackage{graphicx}
 \usepackage{listings}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{hyperref}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -47,12 +50,20 @@
 
 
 \newcommand{\ia}[1]{\textcolor{MidnightBlue}{#1}}
+\newcommand{\piste}[1]{\textcolor{FireBrick}{#1}}
 \newcommand{\techno}[1]{\texttt{\textcolor{Sienna}{#1}}}
 \newcommand{\minio}{\techno{MinIO}}
 \newcommand{\docker}{\techno{Docker}}
 \newcommand{\openmetadata}{\techno{OpenMetadata}}
 \newcommand{\airflow}{\techno{Airflow}}
 \newcommand{\boto}{\techno{Boto3}}
+\newcommand{\postgresql}{\techno{PostgreSQL}}
+\newcommand{\dbt}{\techno{DBT}}
+\newcommand{\sql}{\techno{SQL}}
+\newcommand{\smtplib}{\techno{smtplib}}
+\newcommand{\prometheus}{\techno{Prometheus}}
+\newcommand{\grafana}{\techno{Grafana}}
+
 
 \newcommand{\fichier}[1]{\colorbox{LightGrey}{\texttt{\textcolor{FireBrick}{#1}}}}
 \newcommand{\bucket}[1]{\colorbox{LightGrey}{\texttt{\textcolor{DodgerBlue}{#1}}}}
@@ -68,6 +79,13 @@
 %     \caption{Diagramme du schéma de base de données}
 %     \label{fig:db_schema}
 % \end{figure}
+%
+% \begin{wrapfigure}{l}{0.33\textwidth}
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{img/db_initial.png}
+%     \caption{Entrepôt initial}
+%     \label{fig:db_schema}
+% \end{wrapfigure}
 
 % CODE
 % \begin{lstlisting}[language=bash]
@@ -109,7 +127,146 @@ pour souligner cet aspect, si ce n'est cette déclaration.
 
 \pagebreak
 
-\section{Introduction}
+\section{Contexte}
+
+Je suis data engineer junior au sein de ShopFlow, une ESN spécialisée dans les solutions
+data pour le secteur e-commerce. Mon client, la société VenteRapide, exploite une boutique en
+ligne généraliste présente sur le marché français depuis 2021.
+
+VenteRapide dispose d'un entrepôt de données (data warehouse) opérationnel,
+construit sur \postgresql et alimenté via \dbt. Cet entrepôt centralise les données
+de commandes, de produits, de clients et de visites du site, et est utilisé quotidiennement
+par l'équipe analytique pour ses reportings.
+
+Dans le cadre d'une évolution de l'activité, VenteRapide me confie la mission de maintenir et
+faire évoluer cet entrepôt en conditions opérationnelles.
+
+
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[width=\textwidth]{img/linage_initial.png}
+    \caption{Linéage des données dans l'entrepôt initial}
+    \label{fig:db_lineage}
+\end{figure}
+
+\begin{wrapfigure}[15]{l}{0.33\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{img/db_initial.png}
+    \caption{Entrepôt initial}
+    \label{fig:db_schema}
+\end{wrapfigure}
+~
+\section{Préparation de la maintenance}
+\subsection{État initial de l'entrepôt de données}
+
+L'entrepôt initial contient :
+\begin{itemize}
+    \item 5 tables de données brutes : \fichier{clients}, \fichier{commandes}, \fichier{lignes\_commandes}, \fichier{produits}, \fichier{visites},
+    \item 5 tables de dimensions: \fichier{canal}, \fichier{client}, \fichier{date}, \fichier{produit}, \fichier{statut\_commandes},
+    \item 2 tables de faits : \fichier{commandes}, \fichier{visites}.
+    \item 1 table SCD type 2 : \fichier{client}.
+\end{itemize}
+
+Le linéage des données est assuré par \dbt, qui orchestre
+les transformations et les chargements. La figure \ref{fig:db_lineage}
+montre le linéage des données dans l'entrepôt initial.
+
+~
+
+~
+
+~
+
+\subsection{Planification de la maintenance}
+
+La maintenance de l'entrepôt de données est planifiées grâce à un système de tickets.
+La vue d'ensemble et un exemple de tickets sont présentés en figure
+\ref{fig:systeme_maitenance}
+
+\begin{figure}[h]
+    \begin{subfigure}{0.55\textwidth}
+        \includegraphics[width=0.9\linewidth]{img/tickets_start.png}
+        \caption{Vue du tableau}
+        \label{fig:tickets_start}
+    \end{subfigure}
+    \begin{subfigure}{0.4\textwidth}
+        \includegraphics[width=0.9\linewidth]{img/ex_ticket.png}
+        \caption{Exemple de ticket de maintenance}
+        \label{fig:ex_ticket}
+    \end{subfigure}
+
+    \caption{Système de tickets de maintenance.}
+    \label{fig:systeme_maitenance}
+\end{figure}
+
+\subsection{Suivi du service}
+
+\ia{Un SLA (Service Level Agreement) est un engagement formel entre un fournisseur
+    de service et ses utilisateurs, définissant le niveau de qualité de service attendu,
+    mesurable par des indicateurs précis, les SLI (Service Level Indicators).
+    Il répond à trois questions : quoi (quel service),
+    combien (quel niveau de performance), et que se passe-t-il en cas de non-respect.}
+
+Dans le cas d'une base de données, un SLA pourrait inclure des engagements sur :
+\begin{itemize}
+    \item La disponibilité du service sur une période donnée:
+          par exemple, un engagement de 99,9\% de disponibilité mensuel.
+    \item Le temps de traitement des incidents: délai de prise en charge et
+          délai de résolution pouvant être fonction du niveau de criticité
+    \item La planification de fenêtre de maintenance: plages de temps où
+          la contrainte de disponibilité peut être levée.
+    \item Recovery point objective (RPO) et Recovery time objective (RTO): les
+          indicateurs précisant la quantité maximale de perte de données et le
+          temps maximal de restauration acceptable, en cas de rupture de service.
+    \item Performance: temps de réponse des requêtes, nombre de transactions par seconde, etc.
+\end{itemize}
+
+Dans le cadre de ce projet, je fais le choix de mettre en place les SLI suivants:
+\begin{itemize}
+    \item Mesure (booléenne) de la santé du conteneur \postgresql:
+          simple tentative de connexion régulière pour vérifier que la
+          base de données est accessible.
+    \item Mesure de la latence d'une requête simple sur les tables
+          de faits de la base de données (tables de haute valeur pour les
+          équipes métiers).
+\end{itemize}
+
+Le script \fichier{scripts/set\_monitoring\_db.sh} permet de créer la base des
+données de monitoring et l'utilisateur associé, ainsi que les droits nécessaires
+via des requêtes SQL envoyés au sein du conteneur \postgresql. Le script
+\fichier{monitor.py} contient le code de surveillance de la base de données
+qui écrit à intervalle régulier les mesures décrites ci-dessus dans une table.
+Enfin le script \fichier{streamlit/monitor\_viz.py} permet de visualiser ces
+mesures de latence à l'aide d'un tableau de bord streamlit
+(figure \ref{fig:monitor_dashboard}).
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=\textwidth]{img/monitor_dashboard.png}
+    \caption{Screenshot du tableau de bord de monitoring de la base de données}
+    \label{fig:monitor_dashboard}
+\end{figure}
+
+
+
+\noindent Lien utile:
+\begin{itemize}
+    \item \url{https://www.ibm.com/fr-fr/think/topics/service-level-agreement}
+    \item \url{https://sre.google/sre-book/service-level-objectives/}
+\end{itemize}
+
+\noindent Pour aller plus loin:
+\begin{itemize}
+    \item \piste{Mise en place d'une architecture "collecteur" + "visualiseur"
+              en solution industriel et gratuite grâce à \prometheus\ et \grafana.}
+    \item \piste{Mise en place d'un système d'alerte structuré sur une fenêtre
+              de confirmation (ex: seuil d'une métrique dépassée sur plusieurs
+              mesures consécutives ou p95 supérieur à un seuil sur les 5 dernières
+              minutes.) Technologies possibles: \sql + \smtplib\ ou
+              \prometheus\ Alertmanager + \grafana\ Alerting.}
+\end{itemize}
+
 
 
 
