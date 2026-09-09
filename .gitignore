@@ -229,3 +229,4 @@ data/
 *.fls
 *.synctex.gz
 *.toc
+*.out
