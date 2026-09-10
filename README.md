@@ -112,3 +112,44 @@ Ouvrez ensuite http://localhost:8080 pour accéder au lineage graph (icône en b
 ```bash
 pg_restore -d datawarehouse_e6 fichier.dump
 ```
+---
+
+# Ma mise en place
+
+## Monitoring
+
+```bash
+./scripts/set_montoring_db.sh
+```
+Création de la base de donnée dédiée au monitoring (une seule fois)
+
+```bash
+python monitor.py
+```
+Accumule les métriques dans la base de données dédiée (boucle infinie)
+
+```bash
+streamlit run streamlit/monitor_viz.py
+```
+Visualisation auto-rafrachie des métriques de monitoring
+
+## Back-up
+
+```bash
+./scripts/set_backup_roles.sh
+```
+Back-up des rôles et privilèges
+
+```bash
+./scripts/set_backup_db.sh
+```
+Back-up de la base de données datawarehouse_e6
+
+```bash
+./scripts/test_backup_db.sh
+```
+Test de la restauration de la base de données datawarehouse_e6 et des rôles et privilèges
+
+
+
+
