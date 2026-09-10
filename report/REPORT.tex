@@ -51,6 +51,8 @@
 
 \newcommand{\ia}[1]{\textcolor{MidnightBlue}{#1}}
 \newcommand{\piste}[1]{\textcolor{FireBrick}{#1}}
+\newcommand{\inlinecode}[1]{\texttt{\textcolor{DarkGray}{#1}}}
+\newcommand{\program}[1]{\texttt{\textcolor{Maroon}{#1}}}
 \newcommand{\techno}[1]{\texttt{\textcolor{Sienna}{#1}}}
 \newcommand{\minio}{\techno{MinIO}}
 \newcommand{\docker}{\techno{Docker}}
@@ -64,6 +66,7 @@
 \newcommand{\prometheus}{\techno{Prometheus}}
 \newcommand{\grafana}{\techno{Grafana}}
 
+\newcommand{\cron}{\program{cron}}
 
 \newcommand{\fichier}[1]{\colorbox{LightGrey}{\texttt{\textcolor{FireBrick}{#1}}}}
 \newcommand{\bucket}[1]{\colorbox{LightGrey}{\texttt{\textcolor{DodgerBlue}{#1}}}}
@@ -267,6 +270,117 @@ mesures de latence à l'aide d'un tableau de bord streamlit
               \prometheus\ Alertmanager + \grafana\ Alerting.}
 \end{itemize}
 
+\subsection{Backup régulier}
+
+La stratégie de back-up mis en place repose sur les outils \program{pg\_dump} et
+\program{pg\_dumpall} (pour la sauvegarde) et \program{psql}/\program{pg\_restore}
+pour la restauration.
+
+Il faut distinguer deux types de backup, (1) le backup complet qui reconstruira l'environnement
+de production complet, roles, privilèges, bases de données, etc... dans sa
+globalité, et (2) le back-up partiel qui va sélectionner les entités particulières
+de la base \postgresql\ à sauvegarder :
+\begin{itemize}
+    \item \program{pg\_dump} tombe dans la catégorie back-up partiel puisqu'elle
+          va permettre de sauvegarder les données d'une base de données (mais ne
+          considèrera pas par exemple la création des rôles ayant des droits sur
+          cette table, ce sont des entités globales),
+    \item \program{pg\_dumpall} tombe dans la catégorie back-up complet (bien que
+          certaines options permettent de limiter son périmètre).
+\end{itemize}
+
+\subsubsection{Procédure de sauvegarde}
+
+\begin{wrapfigure}[18]{l}{0.22\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{img/check_backup.png}
+    \caption{Backup 15min, rétention 3h}
+    \label{fig:backup}
+\end{wrapfigure}
+
+En guise de stratégie de sauvegarde et pour expérimenter les deux approches, nous allons
+procéder comme suit:
+\begin{itemize}
+    \item Procédure de sauvegarde complète que l'on restreint à l'extraction
+          des rôles et privilèges, avec \program{pg\_dumpall}
+    \item Procédure de sauvegarde partielle de la seule base de données
+          \inlinecode{datawarehouse\_e6}, avec \program{pg\_dump}
+\end{itemize}
+
+Un premier script \fichier{scripts/set\_backup\_roles.sh} permet la première sauvegarde
+et un deuxième \fichier{scripts/set\_backup\_db.sh} permet la seconde.
+À savoir qu'il existe deux formats possibles pour les fichiers-dump:
+ficher-sql contenant les commandes \sql\ pour
+reconstruire la sauvegarde à l'identique (via \program{pgsql}) ou
+un format dédié compréssé (grâce à \techno{zlib}) utilisable par
+\program{pg\_restore} pour la reconstruction.
+
+Ces scripts permettent également d'opérer la période de rétention
+des fichiers en appliquant le temps de conservation des fichiers-sql/dump.
+
+C'est ensuite un \program{cron} qui permet la régularité des opérations de
+back-up via la planification de l'exécution de ces deux scripts.
+
+Pour l'exercice d'apprentissage, une éxecution toutes les 15 minutes
+avec un période de rétention de 3 heures a été l'option choisie. En
+situation opérationnelle, une exécution quotidienne serait plus adaptée
+avec une retention d'une semaine ou d'un mois.
+
+\subsubsection{Procédure de restauration}
+
+La stratégie de restauration que nous allons voir va permettre de
+reproduire la base de données \inlinecode{datawarehouse\_e6}\ tout
+en conservant les accès et privilèges des différents utilisateurs.
+Afin de tester la procédure, un conteneur jetable sera mis en place
+afin que les deux tables (originale et restaurée) puissent co-exister.
+
+Afin d'assurer le succès de l'opération, il est nécessaire de
+reproduire les rôles dans le conteneur dédié à la restauration,
+puis de restaurer la base de données \inlinecode{datawarehouse\_e6}
+(l'ordre est important). Le script \fichier{scripts/test\_backup\_db.sh}
+opère cela après la mise en place d'un conteneur.
+
+Vient ensuite une phase de validation avec le lancement de plusieurs
+commandes SQL pour afficher certaines métriques :
+\begin{itemize}
+    \item Liste des rôles restaurés
+    \item Liste des droits sur la table \inlinecode{fact\_commandes}
+    \item Nombre d'entrées dans chaque table
+\end{itemize}
+Ces sorties sont à comparer avec les mêmes commandes exécutées sur le
+conteneur original pour s'assurer qu'il n'y a aucune différence.
+
+Enfin, les tests \dbt\ sont une validation supplémentaire, plus
+approfondie permettant de s'assurer qu'il n'y a pas eu de corruption
+des données, ou de perte de données entraînant une violation des
+règles mises en place dans les modèles des tables et de leurs
+relations.
+
+\subsubsection{Difficultés rencontrées}
+
+\begin{itemize}
+    \item La base de données \postgresql\ tournant dans un conteneur \docker,
+          les commandes sont envoyés via un `docker exec`. Certaines options
+          comme `-t` peuvent interférer avec la sortie de \program{pg\_dump}
+          et corrompre le fichier-dump créé au point que la restauration
+          échoue.
+    \item L'utilisation de \cron nécessite de s'assurer des droits d'éxecution
+          des différents scripts pour la catégorie 'other' ainsi que de
+          l'utilisation de chemin absolue tout au long du script.
+\end{itemize}
+
+\noindent Liens utiles:
+\begin{itemize}
+    \item \url{https://www.postgresql.org/docs/current/backup.html}
+    \item \url{https://sre.google/sre-book/data-integrity/}
+\end{itemize}
+
+\noindent Pour aller plus loin:
+\begin{itemize}
+    \item \piste{\program{pgBackRest} permet la mise en place d'un back up incrémental ou différentiel}
+    \item \piste{Pour une stratégie de back-up robuste, la règle d'or est 3-2-1: 3 copies sur 2 supports différents, 1 support hors site}
+    \item \piste{Planification de retention sophistiquée: 14 backups des derniers jours + 1 backup par mois des 6 derniers mois}
+\end{itemize}
 
 
 
