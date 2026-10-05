@@ -40,3 +40,10 @@ Granularité : une ligne par visite.
 Contient le nombre de pages vues, la durée, le device
 et l'indicateur de conversion.
 {% enddocs %}
+
+{% docs fact_retours %}
+Table de faits des retours par des clients suite à une commande le site livrée.
+Granularité : une ligne par retour de produit.
+Contient le motif et la date de retour, le montant remboursé et le délais de retour
+et l'indicateur de conversion.
+{% enddocs %}

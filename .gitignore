@@ -237,3 +237,6 @@ dbt_internal_packages/
 
 # dbt
 dbt_packages/
+.user.yml
+package-lock.yml
+profiles.yml

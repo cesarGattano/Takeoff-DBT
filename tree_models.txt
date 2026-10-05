@@ -1,0 +1,22 @@
+models
+├── dimensions
+│   ├── dim_canal.sql
+│   ├── dim_client.sql
+│   ├── dim_date.sql
+│   ├── dim_produit.sql
+│   ├── dim_statut_commande.sql
+│   └── schema.yml
+├── facts
+│   ├── fact_commandes.sql
+│   ├── fact_visites.sql
+│   └── schema.yml
+├── models.md
+└── staging
+    ├── schema.yml
+    ├── stg_clients.sql
+    ├── stg_commandes.sql
+    ├── stg_lignes_commande.sql
+    ├── stg_produits.sql
+    └── stg_visites.sql
+
+4 directories, 16 files

@@ -382,6 +382,164 @@ relations.
     \item \piste{Planification de retention sophistiquée: 14 backups des derniers jours + 1 backup par mois des 6 derniers mois}
 \end{itemize}
 
+\section{Opération de maintenance}
+
+\subsection{DBT}
+
+\dbt\ s'intègre dans l'approche ELT qui se démocratise avec l'avénement du cloud
+et en particulier des technologies de datawarehouse et
+la réduction du coût de stockage qui permet de ne pas dépendre
+de machine on-premise et de leur gestion. Cette approche déploie
+la puissance d'un datawarehouse pour la transformation en les chargeant brutes au préalable.
+Les données sont plus facilement et rapidement gérable. \dbt\ fournit une solution
+de transformation de données propre et prête pour l'analyse, en poussant l'automatisation
+et la collaboration sur la modélisation et le traitement des données.
+Le principe derrière \dbt et de reproduire les bonnes pratiques en
+développement d'application pour le développement de modèle analytique
+de données.
+
+\subsection{Intégration d'une nouvelle source de données}
+
+Le fichier \fichier{raw\_retours.csv} a été ajouté aux \texttt{seeds}
+\dbt, pour l'intégrer comme une nouvelle source de données. En parallèle,
+un fichier \fichier{schema.yml} a été générée pour fournir la description
+de tous les fichiers-csv présent, à des fins de documentation.
+
+En suite la commande:
+\begin{lstlisting}[language=bash]
+dbt seed
+\end{lstlisting}
+va s'emparer du nouveau fichier-csv et créer une table dans la base
+de données
+
+
+\subsection{Modèle de staging des données brutes}
+
+Le modèle de staging selon \dbt, est un modèle ou peu de transformations
+sont opérées à partir des données des sources. Il est recommandé de les
+matérialiser en vues plutôt qu'en table et servent essentiellement à
+renommer et caster les colonnes et à effectuer des tests sur ces données
+pour les normaliser (unicité, non-null, valeurs autorisées, ...)
+
+Dans \fichier{models}, un fichier \fichier{stg\_retours.sql} a été créé
+pour modéliser la table de staging des données de retours.
+
+\begin{lstlisting}[language=SQL]
+with source as (
+    select * from {{ ref('raw_retours') }}
+),
+
+renamed as (
+    select
+        retour_id::integer,
+        command_id::integer,
+        produit_id::integer,
+        client_id::integer,
+        date_retour::date,
+        motif,
+        montant_rembourse::numeric(10,2)
+    from source
+)
+\end{lstlisting}
+
+En complément, le fichier \fichier{schema.yml} a été complété pour inclure
+la documentation et les tests d'unicité, non-null et de valeurs autorisés
+sur les différents champs de la table \texttt{retours}.
+
+Pour finir la commande:
+\begin{lstlisting}[language=bash]
+dbt build --select stg_retours
+\end{lstlisting}
+Permet la matérialisation de la vue et l'exécution des tests programmés
+dans le fichier \fichier{schema.yml}
+
+
+\subsubsection*{Difficultés rencontrées}
+
+Au moment de réaliser ce projet, l'équipe \dbt\ est en phase de transition
+vers \dbt\ v2 avec le déploiement de \techno{dbt-fusion} en remplacement
+de \techno{dbt-core}, mais le connecteur \postgresql\ n'est pas encore
+disponible pour cette version. Bien que la v2 soit encore en pré-release
+la documentation et l'extension VSCode repose sur cette dernière, ce qui
+a créé une incompatibilité à gérer au niveau de l'installation.
+
+\subsubsection*{Liens utiles}
+\begin{itemize}
+    \item \dbt\ fundamentals (VSCode): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals-vs-code/analytics-development-lifecycle-30min/dbt-and-the-adlc?page=2}
+\end{itemize}
+
+\subsubsection*{Pour aller plus loin}
+\begin{itemize}
+    \item \piste{Ajout de tests dans le \fichier{schema.yml} du dossier \fichier{seeds} pour détecter prématurément des fichiers-csv corrompus}
+    \item \piste{Explorer Fivetran! pour la partie EL si les sources sont externes}
+    \item \piste{Recensement des sources dans un fichiers \fichier{sources.yaml} si elles sont externes.}
+\end{itemize}
+
+\subsection{Création de la table des faits associés aux nouvelles données}
+
+La table des faits à intégrer respecte un schéma en étoile déjà en place au
+sein de \dbt. Ainsi, la table des faits \fichier{fact\_retours} et doit
+être reliés aux tables de dimensions existantes.
+
+Dans \fichier{models/facts}, un fichier \fichier{fact\_retours.sql}
+a été créé pour modéliser la table. Cette fois, la table est matérialisée
+comme une table car elle est destinée à être interrogée par les équipes métiers
+et analystes. Entre autres, ce fichier contient les jointures de tables
+entre deux modèles de staging et les tables de dimensions existantes.
+
+\begin{lstlisting}[language=SQL]
+select
+    r.retour_id,
+    r.commande_id,
+    to_char(c.date_commande, 'YYYYMMDD')::integer   as date_commande_id,
+    to_char(c.date_expedition, 'YYYYMMDD')::integer as date_expedition_id,
+    to_char(c.date_livraison, 'YYYYMMDD')::integer   as date_livraison_id,
+    to_char(r.date_retour, 'YYYYMMDD')::integer   as date_retour_id,
+    dc.client_id,
+    dp.produit_id,
+    r.motif,
+    l.montant_ligne as montant_paye,
+    r.montant_rembourse,
+    case
+        when c.date_livraison is not null
+        then (r.date_retour - c.date_livraison)
+        when c.date_commande is not null
+        then (r.date_retour - c.date_commande)
+        else null
+    end as delai_retour_jours
+from retours r
+left join commande c       on r.commande_id = c.commande_id
+left join lignes l         on r.commande_id = l.commande_id and r.produit_id = l.produit_id
+left join dim_client dc    on r.client_id = dc.client_id
+left join dim_produit dp   on r.produit_id = dp.produit_id
+\end{lstlisting}
+
+En complément le fichier \fichier{schema.yml} a été complété pour
+inclure la documentation, les tests d'unicité, non-null et de valeurs autorisées
+ainsi que les relations avec les tables de dimension.
+
+Pour finir la commande:
+\begin{lstlisting}[language=bash]
+dbt build --select fact_retours
+\end{lstlisting}
+permet la matérialisation de la table et l'exécution des tests programmés dans le fichier \fichier{schema.yml}.
+
+\subsection{Mise à jour de la documentation \dbt}
+
+Comme mentionné précédemment, la première documentation \dbt est intégré
+aux fichiers \fichier{schema.yml}. Elles ont étaient complétées à chaque
+étape de la maintenance.
+
+
+\subsubsection*{Difficultés rencontrées}
+
+\begin{itemize}
+    \item Les tests \dbt\ ont révélé que certains champs étaient \texttt{NULL}. Notamment,
+          les champs date d'expédition et date de livraison, laissant penser qu'il y a
+          peut-être qu'une mode de retrait existe.
+    \item Dans une autre mesure une donnée avec un \texttt{montant\_paye} nul
+          semble être de l'ordre de l'erreur.
+\end{itemize}
 
 
 \end{document}
