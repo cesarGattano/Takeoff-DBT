@@ -524,12 +524,64 @@ dbt build --select fact_retours
 \end{lstlisting}
 permet la matérialisation de la table et l'exécution des tests programmés dans le fichier \fichier{schema.yml}.
 
+\subsection{Tests}
+
+\subsubsection{Tests génériques}
+
+Ils sont intégrés aux fichiers \fichier{schema.yml} et permettent de vérifier
+\begin{itemize}
+    \item l'unicité,
+    \item la non-nullité,
+    \item l'appartenance à des valeurs autorisées,
+    \item la validité des relations entre modèles de données.
+\end{itemize}
+
+\subsubsection{Tests singuliers}
+
+En complément des tests génériques de \dbt\ renseignés dans les fichiers
+\fichier{schema.yml}, il est possible d'implémenter des tests singuliers
+propres à la logique métier à l'aide de fichier \sql. Par défaut un
+test \dbt\ valide est une requête \sql\ qui retourne 0 ligne de données.
+
+Un exemple de test singulier a été mise en place dans le dossier \fichier{tests}:
+\fichier{asser\_fat\_retours\_\_delai\_retours\_jours\_positive.sql}
+\begin{lstlisting}[language=sql]
+select
+    retour_id,
+    delai_retour_jours
+from {{ ref('fact_retours') }}
+where delai_retour_jours IS NOT NULL AND delai_retour_jours < 0
+\end{lstlisting}
+Ce test permet de s'assurer que le délai de retours n'est jamais
+négatif, ce qui serait aberrant.
+
 \subsection{Mise à jour de la documentation \dbt}
 
-Comme mentionné précédemment, la première documentation \dbt est intégré
-aux fichiers \fichier{schema.yml}. Elles ont étaient complétées à chaque
-étape de la maintenance.
+\subsubsection*{Écriture de la documentation}
 
+Comme mentionné précédemment, la première documentation \dbt\ est intégré
+aux fichiers \fichier{schema.yml}. Elles ont étaient complétées à chaque
+étape de la maintenance. Leur intégration peut se faire directement
+dans les fichiers ou alors via une référence à un bloc de documentation dans un
+fichier markdown.
+existants. Un exemple de documentation séparée est le fichier \fichier{models.md}
+dans \fichier{models/}:
+\begin{lstlisting}[]
+{% docs dim_client %}
+Dimension client issue du systeme e-commerce.
+Contient les informations de chaque client avec son segment (Premium/Standard),
+sa localisation et sa date d'inscription.
+Utilisee en jointure avec fact_commandes et fact_visites via client_id.
+{% enddocs %}
+
+{% docs dim_produit %}
+Dimension produit du catalogue e-commerce.
+Contient les caracteristiques de chaque produit : categorie, marque, prix,
+cout d'achat et marges calculees.
+{% enddocs %}
+
+...
+\end{lstlisting}
 
 \subsubsection*{Difficultés rencontrées}
 
@@ -541,5 +593,57 @@ aux fichiers \fichier{schema.yml}. Elles ont étaient complétées à chaque
           semble être de l'ordre de l'erreur.
 \end{itemize}
 
+\subsubsection*{Liens utiles}
+
+\begin{itemize}
+    \item DBT fundamentals (building tests): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/data-tests-60min/building-tests?page=1}
+    \item DBT fundamentals (documentation basics): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/documentation-40min/documentation-basics?page=1}
+    \item \url{https://github.com/dbt-labs/dbt}
+\end{itemize}
+
+\subsubsection*{Génération de la documentation}
+
+En \dbt, la documentation générée, basée sur la documentation écrite en section
+précédente. Elle est générée à l'aide de la commande:
+\begin{lstlisting}[language=bash]
+dbt docs generate
+\end{lstlisting}
+Cette commande va générer un site web statique dans le dossier \fichier{target}
+qui peut être visualisé avec la commande:
+\begin{lstlisting}[language=bash]
+dbt docs serve
+\end{lstlisting}
+Ce site permet de parcourir les documentations spécifiques de chaque
+seed et modèles (Colonne, type, description, contraintes, tests, voir figure \ref{fig:dbt_serve_table}).
+Surtout elle permet de visualiser le linéage des données et les relations entre
+les modèles de données. La figure \ref{fig:dbt_lineage_new} montre
+le linéage des données après l'intégration de la nouvelle source de données
+et la création de la table des faits associée.
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[width=\textwidth]{img/dbt_serve_table.png}
+    \caption{Page de documentation générée par \dbt\ pour la table \texttt{fact\_retours}}
+    \label{fig:dbt_serve_table}
+
+    \includegraphics[width=\textwidth]{img/lineage_modif.png}
+    \caption{Linéage des données dans l'entrepôt après maintenance}
+    \label{fig:dbt_lineage_new}
+\end{figure}
+
+\subsubsection*{Difficultés rencontrées}
+
+\begin{itemize}
+    \item Le graphe visuielle dans l'UI montre un noeud \texttt{dim\_date} isolée.
+          Après plusieurs recherches, il s'avère que ce graphe visuelle ne se base que sur
+          les balises \texttt{ref()} dans les fichiers \sql\ et ne prend pas en compte les relations
+          définies dans les fichiers \fichier{schema.yml}. Cet outil montre un DAG incomplet.
+\end{itemize}
+
+\subsubsection*{Liens utiles}
+
+\begin{itemize}
+    \item DBT fundamentals (documentation basics): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/documentation-40min/documentation-basics?page=1}
+\end{itemize}
 
 \end{document}
