@@ -230,3 +230,10 @@ data/
 *.synctex.gz
 *.toc
 *.out
+dbt_internal_packages/
+
+# vscode
+.vscode/
+
+# dbt
+dbt_packages/
