@@ -98,3 +98,93 @@ models:
         description: "True si la visite a abouti à une commande"
       - name: device
         description: "Type d'appareil utilisé : desktop, mobile, tablet"
+
+  - name: fact_retours
+    description: "{{ doc('fact_retours') }}"
+    columns:
+      - name: retour_id
+        description: "Identifiant unique du retour"
+        tests:
+          - unique
+          - not_null
+      - name: commande_id
+        description: "Clé étrangère vers dim_commande"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_commande')
+                field: commande_id
+      - name: date_commande_id
+        description: "Clé étrangère vers dim_date (date de commande)"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: date_expedition_id
+        description: "Clé étrangère vers dim_date (date d'expédition)"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id                
+      - name: date_livraison_id
+        description: "Clé étrangère vers dim_date (date de livraison)"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: date_retour_id
+        description: "Clé étrangère vers dim_date (date de retour)"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: client_id
+        description: "Clé étrangère vers dim_client"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_client')
+                field: client_id
+      - name: produit_id
+        description: "Clé étrangère vers dim_produit"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: produit_id
+      - name: motif
+        description: "Motif du retour"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Défaut', "Changement d''avis", 'Erreur', 'Direct']
+      - name: montant_paye
+        description: "Montant payé de la commande TTC"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: montant_rembourse
+        description: "Montant remboursé de la commande"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: delai_retour_jours
+        description: "Délais de retour en jours"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
