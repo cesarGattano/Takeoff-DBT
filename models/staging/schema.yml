@@ -92,3 +92,32 @@ models:
           - accepted_values:
               arguments:
                 values: ['SEO', 'Email', 'Pub', 'Direct']
+
+  - name: stg_retours
+    description: "Données de retours nettoyées et typées"
+    columns:
+      - name: retour_id
+        tests:
+          - unique
+          - not_null
+      - name: commande_id
+        tests:
+          - not_null
+      - name: produit_id
+        tests:
+          - not_null
+      - name: client_id
+        tests:
+          - not_null
+      - name: motif
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Défaut', "Changement d''avis", 'Erreur', 'Direct']
+      - name: montant_rembourse
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
