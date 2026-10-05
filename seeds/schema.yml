@@ -1,0 +1,131 @@
+version: 2
+
+seeds:
+  - name: raw_clients
+    description: "Données clients brutes"
+    columns:
+      - name: client_id
+        description: "Identifiant unique du client"
+      - name: nom
+        description: "Nom du client"
+      - name: prenom
+        description: "Prénom du client"
+      - name: email
+        description: "Email du client"
+      - name: date de naissance
+        description: "Date de naissance du client"
+      - name: ville
+        description: "Ville du client"
+      - name: code_postal
+        description: "Code postal du client"
+      - name: pays
+        description: "Pays du client"
+      - name: segment
+        description: "Segment client"
+      - name: date_inscription
+        description: "Date d'inscription du client"
+      - name: actif
+        description: "Client actif ?"
+
+  - name: raw_produits
+    description: "Données produits brutes"
+    columns:
+      - name: produit_id
+        description: "Identifiant unique du produit"
+      - name: nom
+        description: "Nom du produit"
+      - name: description
+        description: "Description du produit"
+      - name: categorie
+        description: "Catégorie du produit"
+      - name: sous-categorie
+        description: "Sous-catégorie du produit"
+      - name: marque
+        description: "Marque du produit"
+      - name: prix_unitaire
+        description: "Prix du produit pour une unité"
+      - name: cout_achat
+        description: "Coût d'achat du produit pour une unité"
+      - name: stock
+        description: "Quantité du produits en stock"
+      - name: actif
+        description: "Produit actif ?"
+
+  - name: raw_commandes
+    description: "Données commandes brutes"
+    columns:
+      - name: commande_id
+        description: "Identifiant unique de commande"
+      - name: client_id
+        description: "Identifiant du client ayant passé la commande"
+      - name: date_commande
+        description: "Date de la commande"
+      - name: statut
+        description: "Statut de la commande"
+      - name: canal
+        description: "Canal utilisé pour la commande"
+      - name: montant_total
+        description: "Montant total de la commande"
+      - name: frais_livraison
+        description: "Frais de livraison associés à la commande"
+      - name: montant_remise
+        description: "Montant de remise appliquée sur la commande"
+      - name: date_expedition
+        description: "Date d'expédition de la commande"
+      - name: date_livraison
+        description: "Date de livraison de la commande"
+
+
+  - name: raw_lignes_commande
+    description: "Données lignes de commande brutes"
+    columns:
+      - name: ligne_id
+        description: "Identifiant unique de la ligne de commande"
+      - name: commande_id
+        description: "Identifiant de la commande associée"
+      - name: produit_id
+        description: "Identifiant du produit associé"
+      - name: quantite
+        description: "Quantité du produit commandée"
+      - name: prix_unitaire
+        description: "Prix appliquée pour une unité du produit"
+      - name: remise_ligne
+        description: "Remise appliquée sur la ligne de commande"
+
+  - name: raw_visites
+    description: "Données visites brutes"
+    columns:
+      - name: visite_id
+        description: "Identifiant unique de la visite"
+      - name: client_id
+        description: "Identifiant du client associé"
+      - name: date_visite
+        description: "Date de la visite"
+      - name: canal
+        description: "Canal utilisé pour la visite"
+      - name: pages_vues
+        description: "Nombre de pages vues durant la visite"
+      - name: duree_secondes
+        description: "Durée de la visite en secondes"
+      - name: a_converti
+        description: "???"
+      - name: device
+        description: "Appareil utilisé pour la visite"
+
+  - name: raw_retours
+    description: "Données retours brutes"
+    columns:
+      - name: retour_id
+        description: "Identifiant unique du retour"
+      - name: commande_id
+        description: "Identifiant de la commande associée"
+      - name: produit_id
+        description: "Identifiant du produit associée"
+      - name: client_id
+        description: "Identifiant du client associé"
+      - name: date_retour
+        description: "Date du retour"
+      - name: motif
+        description: "Motif du retour"
+      - name: montant_rembourse
+        description: "Montant remboursé suite au retour"
