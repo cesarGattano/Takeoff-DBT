@@ -3,7 +3,7 @@
 # Script to execute the SQL script 01_create_role_reporting.sql in the PostgreSQL container takeoff-dbt-db
 # Author: Cesar Gattano
 # AI assistant: Claude
-# Date: 9 September 2026
+# Date: 5 Octobre 2026
 
 source .env
 
