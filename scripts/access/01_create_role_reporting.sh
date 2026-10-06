@@ -8,4 +8,4 @@
 source .env
 
 docker exec -i takeoff-dbt-db psql -U postgres -d datawarehouse_e6 \
-  -v ON_ERROR_STOP=1 -v REPORTING_USER=$REPORTING_USER -v REPORTING_PASSWORD=$REPORTING_PASSWORD < scripts/access/01_create_role_reporting.sql
+  -v ON_ERROR_STOP=1 -v REPORTING_USER="$REPORTING_USER" -v REPORTING_PASSWORD="$REPORTING_PASSWORD" < scripts/access/01_create_role_reporting.sql
