@@ -113,7 +113,7 @@ models:
           - not_null
           - relationships:
               arguments:
-                to: ref('dim_commande')
+                to: ref('stg_commandes')
                 field: commande_id
       - name: date_commande_id
         description: "Clé étrangère vers dim_date (date de commande)"

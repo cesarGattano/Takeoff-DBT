@@ -30,10 +30,11 @@ clean-targets: # directories to be removed by `dbt clean`
 # files using the `{{ config(...) }}` macro.
 models:
   datawarehouse_e6:
-    # Config indicated by + and applies to all files under models/example/
     staging:
       +materialized: view
     dimensions:
       +materialized: table
     facts:
       +materialized: table
+      +grants:
+        select: ['reporting']

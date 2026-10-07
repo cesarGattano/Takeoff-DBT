@@ -1,5 +1,5 @@
 client_id,nom,prenom,email,date_naissance,ville,code_postal,pays,segment,date_inscription,actif
-1,Martin,Sophie,sophie.martin@email.fr,1985-03-12,Bordeaux,33000,France,Premium,2021-01-15,true
+1,Anonymous,Anonymous,anonymous@email.fr,1985-01-01,Nowhere,33999,France,Premium,2021-01-15,true
 2,Dupont,Lucas,lucas.dupont@email.fr,1990-07-22,Lyon,69003,France,Standard,2021-02-03,true
 3,Bernard,Emma,emma.bernard@email.fr,1978-11-05,Marseille,13008,France,Premium,2021-02-14,true
 4,Petit,Thomas,thomas.petit@email.fr,1995-04-18,Bordeaux,33000,France,Standard,2021-03-01,true

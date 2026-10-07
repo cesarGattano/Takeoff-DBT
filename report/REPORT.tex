@@ -62,9 +62,11 @@
 \newcommand{\postgresql}{\techno{PostgreSQL}}
 \newcommand{\dbt}{\techno{DBT}}
 \newcommand{\sql}{\techno{SQL}}
+\newcommand{\psql}{\techno{psql}}
 \newcommand{\smtplib}{\techno{smtplib}}
 \newcommand{\prometheus}{\techno{Prometheus}}
 \newcommand{\grafana}{\techno{Grafana}}
+\newcommand{\pytest}{\techno{Pytest}}
 
 \newcommand{\cron}{\program{cron}}
 
@@ -646,4 +648,307 @@ et la création de la table des faits associée.
     \item DBT fundamentals (documentation basics): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/documentation-40min/documentation-basics?page=1}
 \end{itemize}
 
+\section{Gestion des accès et ajout d'un nouvea rôle}
+
+Nous allons ici décrire la procédure de création d'un nouveau rôle sur la base de données.
+
+\subsection{Audit de la situation avant toute opération}
+
+Le script \fichier{scripts/access/00\_audit.sql} est un ensemble de requêtes \sql\ qui permettent de récupérer
+toutes les informations pertinentes sur les rôles et privilèges existants dans la base de données. Il est exécuté via le script \fichier{scripts/access/00\_audit.sh}.
+
+\begin{lstlisting}[language=sql]
+SELECT version();
+\end{lstlisting}
+récupère la version de \postgresql\ de la base de données en cours d'utilisation.
+\begin{lstlisting}[language=sql]
+\du
+\end{lstlisting}
+récupère la liste des rôles existants sur la base de données, ainsi que leurs attributes ().
+\begin{lstlisting}[language=sql]
+\dn+
+\end{lstlisting}
+récupère la liste détaillée des schémas.
+\begin{lstlisting}[language=sql]
+\dp public.*
+\end{lstlisting}
+récupère la liste des privilèges et règles sur les objets du schéma public.
+\begin{lstlisting}[language=sql]
+\ddp
+\end{lstlisting}
+récupère la liste des privilèges par défaut sur les objets.
+\begin{lstlisting}[language=sql]
+SELECT datname, datacl FROM pg_database WHERE datname = current_database();
+\end{lstlisting}
+récupère la liste des privilèges sur la base de données en cours d'utilisation.
+Traduction [<role1>]=[C][T][c]/<role2> signifie que le rôle <role1>
+a les privilèges de création de nouveaux schémas au sein de la base de données (C),
+de création de tables temporaires lors de l'utilisation de la base de données (T)
+et de connexion à la base de données (c), et que ces privilèges ont
+été accordés par le rôle <role2>.
+
+\subsection{Ajout d'un role}
+
+Un script \fichier{scripts/access/01\_create\_role.sql} a été créé pour ajouter un nouveau rôle à la base de données.
+\begin{lstlisting}[language=sql]
+CREATE ROLE reporting NOLOGIN
+\end{lstlisting}
+Ce rôle \texttt{reporting} est un groupe destiné à regrouper les utilisateurs ayant besoin d'accéder aux données pour le reporting.
+\begin{lstlisting}[language=sql]
+CREATE ROLE <role_name> LOGIN PASSWORD <password> IN ROLE reporting
+   NOSUPERUSER NOCREATEDB NOCREATEROLE CONNECTION LIMIT 5'
+\end{lstlisting}
+Ce rôle \texttt{<role\_name>} est un utilisateur qui peut se connecter
+à la base de données avec le mot de passe \texttt{<password>}.
+Les privilèges de création lui sont retirés, et on limite le nombre de connexions simultanées.
+
+\subsection{Attribution des privilèges}
+
+Un scripte \fichier{scripts/access/02\_grant\_privileges.sql} a été
+créé pour attribuer les privilèges nécessaires au rôle
+\texttt{reporting} (et donc à ses utilisateurs). Il s'éxecute via le
+script \fichier{scripts/access/02\_grant\_privileges.sh}. La commande
+\sql\ \texttt{GRANT} est utilisée de différentes manières pour accorder
+des droits de connexions, d'usage et de sélection sur différentes tables.
+Un cas particulier est la table \texttt{dim\_client} contenant des données
+personnelles. L'application du RGPD impose de restreindre l'accès à certaines
+données pour le rôle \texttt{reporting}.
+
+Aussi intéressantes soient-elles à découvrir, la gestion des attributions
+via \psql ne sont malheureusement pas résilients à un projet dbt.
+En effet, lorsqu'une commande \texttt{dbt build} est exécutée, les objets
+sont détruits durant le processus avant d'être récréés. Les privilèges
+étant "écrits" sur les objets, ils disparaissent avec. Pour assurer
+la persistence des privilèges, il est alors nécessaires de les ajouter
+dans les fichiers de configuration du projet \dbt.
+
+Exemple au niveau de \fichier{dbt\_project.yml}:
+\begin{lstlisting}[]
+models:
+  datawarehouse_e6:
+    facts:
+      +materialized: table
+      +grants:
+        select: ['reporting']
+\end{lstlisting}
+
+Exemple au niveau des modèles, \fichier{schema.yml}:
+\begin{lstlisting}[]
+models:
+  - name: dim_produit
+    description: "{{ doc('dim_produit') }}"
+    config:
+      grants:
+        select: ['reporting']
+\end{lstlisting}
+
+Pour une solution plus granulaire, comme sur \texttt{dim\_client} qui
+contient des données personnelles, il est nécessaire d'utiliser un post-hook
+directement dans en-tête du fichier du modèle \fichier{dim\_client.sql}:
+\begin{lstlisting}[]
+{{ config(
+    materialized='table',
+    post_hook="grant select (client_id, ville, code_postal, pays, segment,
+                             date_inscription, actif)
+               on {{ this }} to reporting"
+) }}
+\end{lstlisting}
+
+
+\subsection{Tests de validation}
+
+Les tests de validation de la création du nouvel utilisateur sont fait
+grâce au scrypt python \fichier{scripts/access/tests/test\_reporting\_access.py}.
+Ce script utilise \pytest\ pour exécuter une série de tests unitaires
+couvrant une large gamme de scénarios d'accès à la base de données et
+encode le comportement attendu dans le cas de l'utilisateur \texttt{reporter}
+du groupe \texttt{reporting}.
+
+La commande pour lancer ces tests est:
+\begin{lstlisting}[language=bash]
+pytest scripts/access/tests -v -rx
+\end{lstlisting}
+
+\subsubsection*{Difficultés rencontrées}
+\begin{itemize}
+    \item Certains tests \pytest\ mis en place ont demandé d'exclure des tables systèmes
+          de \postgresql\ pour que les tests passent et ne couvrent que le champ "applicatif"
+          de ce que j'ai mis en place.
+    \item \texttt{dbt build} drop tables to recreate them. All rights granted via psql
+          is then removed in the process and needs to be granted again
+\end{itemize}
+
+\subsubsection*{Pour aller plus loin}
+\begin{itemize}
+    \item L'accès granulaire à cause des données personnelles de
+          \texttt{dim\_client} n'étant pas évident avec un BDD \postgresql,
+          une alternative plus puissante serait de créer un vue de
+          \texttt{dim\_client} dans laquelle les données personnelles sont
+          supprimées ou transformées pour respecter le RGPD. Les avantages
+          sont que cette vue intégrerer le lineage et la documentation,
+          l'attribution de privilège revient alors au niveau de la table
+          entière, cela débloque également le \texttt{SELECT *} utile pour
+          la découverte agnostique d'un modèle et enfin, il est possible
+          de transformer les données personnelles en données impersonnelles
+          pour que cela soit utilisable sans compromettre le respect RGPD
+          (e.g. âge $\rightarrow$ tranche d'âge, code postal $\rightarrow$ département)
+\end{itemize}
+
+\subsubsection*{Liens utiles}
+\begin{itemize}
+    \item Prise en main de \psql : \url{https://blog.stephane-robert.info/docs/services/bdd/relationnelles/postgresql/prise-en-main-psql/}
+    \item docs \psql "GRANT" : \url{https://docs.postgresql.fr/11/sql-grant.html}
+    \item pytest: parametrizing tests: \url{https://docs.pytest.org/en/stable/example/parametrize.html}
+    \item \postgresql pg\_catalog: \url{https://docs.postgresql.fr/15/catalogs.html}
+    \item \postgresql information\_schema: \url{https://www.postgresql.org/docs/current/information-schema.html}
+    \item \postgresql pg\_toast: \url{https://docs.postgresql.fr/12/storage-toast.html}
+    \item docs \dbt grants: \url{https://docs.getdbt.com/reference/resource-configs/grants?version=2}
+\end{itemize}
+
+\subsection{RGPD}
+
+Dans le cadre de la RGPD, les données sensibles identifiées se situent
+toutes dans la dimension client:
+\begin{itemize}
+    \item \texttt{nom}, \texttt{prenom} et \texttt{nom\_complet} sont indéniablement des données identifiantes
+    \item \texttt{email} est également une donnée identifiante sensible
+    \item \texttt{date\_naissance}, \texttt{age} ainsi que \texttt{ville}, \texttt{code\_postal} ne sont pas identifiant pris isolément
+          mais leur couplage peut amener à une situation d'identification de personnes. À ce titre,
+          ces données doivent également être protégées.
+\end{itemize}
+
+La stratégie de gestion des accès à ces données a été mis en place précédemment
+on n'autorisant pas la lecture de ces colonnes pour le rôle \texttt{reporting}.
+Comme mentionné dans une solution pour aller plus loin, certaines données
+pourraient être transformées pour être dilué dans une vue issue de \texttt{dim\_client}.
+
+\subsubsection*{Registre des activités de traitements}
+
+Ce registre est décrit dans l'article 30 du RGPD. Il est de la responsabilité
+du responsable de traitement de recenser l'ensemble des traitements mis en
+oeuvre au moyen d'une fiche du registre par traitement. Un traitement est une activité
+qui a une finalité. Le nom et le coordonnées de l'organisme, ainsi que
+le nom et les coordonnées du délégué à la protection des données (DPO) si un
+est désigné.
+
+Une fiche doit comporter:
+\begin{itemize}
+    \item Le nom et les coordonnées du responsable conjoint du traitement.
+    \item La ou les finalités du traitement.
+    \item Les catégories des personnes concernées.
+    \item Les catégories de données personnelles (ex: identité,
+          situation familiale, économique, données bancaires,
+          de connexion, de localisation, etc.).
+    \item Les catégories de destinataires auxquels les données à
+          caractère personnel ont été ou seront communiquées.
+    \item La durée de conservation des différentes catégories de données
+    \item Une description générale des mesures de sécurité techniques
+          et organisationnelles mises en oeuvre.
+\end{itemize}
+
+Exemple d'une fiche de traitement:
+\paragraph{Description du traitement}
+\begin{itemize}
+    \item {\bf Nom du traitement:} Suivi des retours
+    \item {\bf No/REF:} XXXXX
+    \item {\bf Date de création du traitement:} 5 Octobre 2026
+    \item {\bf Date de mise à jour du traitement:} 6 Octobre 2026
+\end{itemize}
+
+\paragraph{Acteurs}
+\begin{itemize}
+    \item {\bf Responsable du traitement:} Jean Durant - 1 grande avenue 12345 Patelin France 01.02.03.04.05 jean.durant@unmail.com
+    \item {\bf DPO:} Bob Francis - 1 petite impasse 12345 Patelin France 01.02.03.04.05 bob.francis@unmail.com
+\end{itemize}
+
+\paragraph{Finalités}
+\begin{itemize}
+    \item {\bf Finalité principale:} Suivi des retours de produits
+    \item {\bf Sous-finalité 1:} Suivi des remboursements après retour
+    \item {\bf Sous-finalité 2:} Contrôle qualité des produits post-vente
+    \item {\bf Sous-finalité 3:} Suivi des délais de retours
+    \item {\bf Sous-finalité 3:} Communication avec le client
+\end{itemize}
+
+\paragraph{Catégories des données personnelles concernées}
+\begin{itemize}
+    \item {\bf Données d'identification:} [\texttt{dim\_client}] nom, prenom, nom\_complet, email, ville, code postal, segment \\
+          Durée de conservation: 1 an d'inactivité sur le compte
+\end{itemize}
+
+\paragraph{Catégories des personnes concernées}
+\begin{itemize}
+    \item {\bf Catégorie de personnes 1:} client: identification du client ayant passé commande
+\end{itemize}
+
+\paragraph{Destinataires des personnes concernées}
+\begin{itemize}
+    \item {\bf Destinataire:} service interne qui traite les données
+\end{itemize}
+
+\paragraph{Mesures de sécurité}
+\begin{itemize}
+    \item {\bf Mesure de sécurité 1:} Sauvegarde des données - existence de backup contenant les données personnelles
+    \item {\bf Mesure de sécurité 2:} Contrôle des accès - Limitation d'accès à ces données
+\end{itemize}
+
+\subsection*{Lien utiles:}
+\begin{itemize}
+    \item Règlement RGPD: \url{https://www.cnil.fr/fr/reglement-europeen-protection-donnees}
+    \item RGPD: registre des activités de traitement: \url{https://www.cnil.fr/fr/definition/registre-des-activites-de-traitement}
+\end{itemize}
+
+\subsection*{Pour aller plus loin:}
+\begin{itemize}
+    \item Principe de minimisation des données (article 5.1.c):
+          on peut toujours questionner l'utilité de la conservation des
+          données personnelles au regard des traitements établis.
+\end{itemize}
+
+\subsubsection*{Procédure de tri/purge}
+
+Les données personnelles sont présentes à plusieurs endroits:
+\begin{itemize}
+    \item seed: le fichier \fichier{raw\_clients.csv} est chargé initialement
+    \item raw: la table \fichier{raw\_clients} contient ces mêmes données sans modification
+    \item staging: la vue \fichier{stg\_clients} contient ces données normalisées
+    \item dimension: la table \fichier{dim\_clients} recensent ces données dans le schéma final en étoile pour l'analytics.
+    \item back-up: les fichiers \fichier{full\_yyyymmdd\_hhmm.dump} contiennt des copies de ces données à l'instant de l'opération de back-up
+\end{itemize}
+
+La procédure de tri/purge devra alors effacer une donnée sur l'ensemble de ces supports.
+\dbt\ est à nouveau très utile pour effacer une donnée à la source et la
+propager à travers le DAG. Après anonymisation de la donnée
+(e.g nom, prenom, nom\_complet = anonymous, email=anonymous@email.fr,
+date de naissance=<année\_conservée>-01-01, code postal=<dep\_conservée>999)
+La commande :
+\begin{lstlisting}[language=bash]
+dbt build
+\end{lstlisting}
+va propager cette anonymisation à travers les couches.
+
+Attention certaines règles de tests peuvent être violés à la suite d'une
+purge: par exemple non-nullité ou unicité.
+
+Programmation de la purge:
+\begin{itemize}
+    \item Le registre de traitement le mentionne plus haut, une règle
+          automatique sur la suppression des données personnelles doit être
+          programmée à l'issue d'une période d'inactivité.
+          Dans ce cas, la mise en place d'un \cron sera adaptée.
+    \item Des demandes explicites de suppression des données personnelles
+          peuvent survenir. Dans ce cas, le lancement de la purge se fait
+          de façon manuelle.
+\end{itemize}
+
+En ce qui concerne la présence des données personnelles dans les back-up,
+ceux-ci sont déjà supprimés automatiquement dans des délais court terme.
+La procédure de purge stipule alors simplement que celle-ci doit être
+réexécutée en cas d'une opération restore.
+
+\subsection*{Pour aller plus loin:}
+\begin{itemize}
+    \item Dans le point suivant, il est question de vue \texttt{scd\_client}.
+          Cette vue répercute également les données personnelles précédemment listées
+\end{itemize}
 \end{document}
