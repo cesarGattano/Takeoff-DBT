@@ -1,0 +1,8 @@
+snapshots:
+  - name: scd_client_new
+    relation: ref('stg_clients')
+    config:
+      schema: snapshots
+      unique_key: client_id
+      strategy: check
+      check_cols: [ville, code_postal, segment]
