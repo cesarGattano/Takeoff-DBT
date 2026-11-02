@@ -1,0 +1,1262 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[svgnames]{xcolor}
+
+\usepackage{geometry}
+\geometry{
+    a4paper,
+    left=2.5cm,
+    right=2.5cm,
+    top=2.5cm,
+    bottom=2.5cm
+}
+\setlength{\emergencystretch}{3em}
+
+\usepackage{times}
+\renewcommand{\familydefault}{\rmdefault}
+
+
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\definecolor{linkcolor1}{HTML}{1976D2}
+\definecolor{linkcolor2}{HTML}{283593}
+\definecolor{linkcolor3}{HTML}{0097A7}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor1,
+    filecolor=linkcolor2,      
+    urlcolor=linkcolor3,
+    pdftitle={Livrable E6: modification d'un entrepôt de données},
+    pdfpagemode=FullScreen,
+    }
+    
+    
+\usepackage{listings}
+\definecolor{backcolor}{HTML}{F5F5F5}
+\definecolor{codegreen}{HTML}{2E7D32}
+\definecolor{codegray}{HTML}{546E7A}
+\definecolor{codeorange}{HTML}{D84315}
+\definecolor{codepink}{HTML}{EC407A}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolor},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepink},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codeorange},
+    basicstyle=\ttfamily\footnotesize,
+    prebreak=\raisebox{0ex}[0ex][0ex]{\dots},
+    breakatwhitespace=true,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+
+\usepackage[most]{tcolorbox}
+\tcbset{on line, 
+        boxsep=4pt, left=0pt,right=0pt,top=0pt,bottom=0pt,
+        colframe=white,colback=backcolor,  
+        highlight math style={enhanced}
+        }
+
+\usepackage{enumitem}
+\usepackage{pifont}
+\setlist[itemize,1]{
+  label={\small\ding{70}},
+  leftmargin=*,
+  itemsep=2pt,
+  topsep=4pt
+}
+\setlist[enumerate,1]{
+  leftmargin=*,
+  itemsep=2pt,
+  topsep=4pt
+}
+
+\usepackage{tabularx}
+\usepackage{array}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+
+% New commandes
+% % % % %
+% Textes styles
+\renewcommand{\emph}[1]{\textsl{#1}}
+\newcommand{\ia}[1]{{\color{MidnightBlue}#1}}
+\newcommand{\piste}[1]{{\color{FireBrick}#1}}
+\newcommand{\inlinecode}[1]{\tcbox{\ttfamily\hyphenchar\font=`\-\color{codegray}#1}}
+\newcommand{\program}[1]{{\ttfamily\bfseries\hyphenchar\font=`\-\color{Maroon}#1}}
+\newcommand{\techno}[1]{{\ttfamily\bfseries\hyphenchar\font=`\-\color{Sienna}#1}}
+
+\definecolor{filecolor}{HTML}{E65100}
+\definecolor{tablecolor}{HTML}{B03A2E}
+\definecolor{databasecolor}{HTML}{784212}
+\definecolor{foldercolor}{HTML}{641E16}
+\definecolor{bucketcolor}{HTML}{9A7D0A}
+\definecolor{rolecolor}{HTML}{2E7D32}
+\newcommand{\fichier}[1]{\colorbox{backcolor}{\ttfamily\bfseries\hyphenchar\font=`\-\color{filecolor}#1}}
+\newcommand{\datatable}[1]{\tcbox{\ttfamily\hyphenchar\font=`\-\color{tablecolor}#1}}
+\newcommand{\database}[1]{\tcbox{\ttfamily\hyphenchar\font=`\-\color{tablecolor}#1}}
+\newcommand{\folder}[1]{\colorbox{backcolor}{\ttfamily\hyphenchar\font=`\-\color{FireBrick}#1}}
+\newcommand{\bucket}[1]{\colorbox{backcolor}{\ttfamily\bfseries\hyphenchar\font=`\-\color{DodgerBlue}#1}}
+\newcommand{\role}[1]{\colorbox{backcolor}{\ttfamily\bfseries\hyphenchar\font=`\-\color{ForestGreen}#1}}
+
+% Listes of technos
+\newcommand{\minio}{\techno{MinIO}}
+\newcommand{\docker}{\techno{Docker}}
+\newcommand{\openmetadata}{\techno{OpenMetadata}}
+\newcommand{\airflow}{\techno{Airflow}}
+\newcommand{\boto}{\techno{Boto3}}
+\newcommand{\postgresql}{\techno{PostgreSQL}}
+\newcommand{\dbt}{\techno{DBT}}
+\newcommand{\sql}{\techno{SQL}}
+\newcommand{\smtplib}{\techno{smtplib}}
+\newcommand{\prometheus}{\techno{Prometheus}}
+\newcommand{\grafana}{\techno{Grafana}}
+\newcommand{\pytest}{\techno{Pytest}}
+\newcommand{\python}{\techno{python}}
+\newcommand{\jinja}{\techno{jinja}}
+\newcommand{\github}{\techno{github}}
+
+\newcommand{\cron}{\program{cron}}
+\newcommand{\psql}{\program{psql}}
+\newcommand{\pgdump}{\program{pg\_dump}}
+\newcommand{\pgdumpall}{\program{pg\_dump\_all}}
+\newcommand{\pgrestore}{\program{pg\_restore}}
+\newcommand{\vscode}{\program{VSCode}}
+
+
+
+% Penses-bêtes
+% % % % %
+% FIGURE
+% \begin{figure}[p]
+%     \centering
+%     \includegraphics[width=\textwidth]{../diagrams/DB_schema.drawio.png}
+%     \caption{Diagramme du schéma de base de données}
+%     \label{fig:db_schema}
+% \end{figure}
+%
+% \begin{wrapfigure}{l}{0.33\textwidth}
+%     \centering
+%     \includegraphics[width=0.9\linewidth]{img/db_initial.png}
+%     \caption{Entrepôt initial}
+%     \label{fig:db_schema}
+% \end{wrapfigure}
+
+% CODE
+% \begin{lstlisting}[language=bash]
+% mc admin policy create local data-engineer-policy policies/DataEngineerReadWrite.json
+% mc admin policy attach local data-engineer-policy --user data-engineer
+% \end{lstlisting}
+% \begin{lstlisting}[language=python]
+% mc admin policy create local data-engineer-policy policies/DataEngineerReadWrite.json
+% mc admin policy attach local data-engineer-policy --user data-engineer
+% \end{lstlisting}
+
+\begin{document}
+
+\title{Modification d'un entrepôt de données}
+\author{Gattano César}
+\maketitle
+
+\section*{Avant-propos}
+
+\subsection*{Structure du rapport}
+
+Ce rapport fournit les explications sur ce qui a été mis en place dans le cadre du livrable E6 relatif à la maintenance d'un entrepôt de données de la certification "expert en infrastructures de données massives" chez Simplon. Un travail technique étant toujours améliorable, l'auteur a reporté en annexe différentes pistes d'amélioration rencontrées durant la veille si le travail devait être renforcé.
+
+Dans cette même annexe, l'auteur reporte les liens vers les sources
+dont il s'est inspiré pour aborder les différentes points techniques
+de ce livrable. Ces deux parties de l'annexe suivent la même structure que la structure du rapport
+
+
+\subsection*{Usage de l'IA générative}
+
+Ce rapport a été rédigé en usant de l'intelligence artificielle. Par soucis de transparence, les parties purement rédigées par l'IA sont
+signalées via une couleur de police bleu sombre. L'auteur certifie que l'ensemble du contenu généré par l'IA a été revu et validé par ses
+soins.
+
+Voici un exemple: \ia{Je suis un assistant IA conçu pour vous aider dans la rédaction de votre rapport. Je génère du texte structuré et cohérent, que vous pouvez ensuite affiner. Mon rôle est de vous fournir un cadre de travail, tout en vous laissant le contrôle final. Ensemble, nous pouvons créer un document clair et professionnel.
+}
+
+En outre, l'auteur indique que l'IA générative a également été utilisée en auto-complétion durant la rédaction de ce rapport. Cette fonctionnalité ayant été utilisée tout au long du rapport, aucun indicateur n'a été mis en place pour souligner cet aspect, si ce n'est cette déclaration.
+
+
+
+
+
+\tableofcontents
+
+\pagebreak
+
+\section{Contexte}
+
+Je suis data engineer junior au sein de \emph{ShopFlow}, une ESN spécialisée dans les solutions data pour le secteur e-commerce.
+Mon client, la société \emph{VenteRapide}, exploite une boutique en ligne généraliste présente sur le marché français depuis 2021.
+
+\emph{VenteRapide} dispose d'un entrepôt de données (data warehouse) opérationnel, construit sur \postgresql\ et alimenté via \dbt. Cet entrepôt centralise les données de commandes, de produits, de clients et de visites du site, et est utilisé quotidiennement
+par l'équipe analytique pour ses reportings.
+
+Dans le cadre d'une évolution de l'activité, VenteRapide me confie la mission de maintenir et faire évoluer cet entrepôt en conditions opérationnelles.
+
+
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[width=\textwidth]{img/linage_initial.png}
+    \caption{Lignage des données dans l'entrepôt initial}
+    \label{fig:db_lineage}
+\end{figure}
+
+\begin{wrapfigure}[13]{l}{0.33\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{img/db_initial.png}
+    \caption{Entrepôt initial}
+    \label{fig:db_schema}
+\end{wrapfigure}
+~
+\section{Préparation de la maintenance}
+\subsection{État initial de l'entrepôt de données}
+
+L'entrepôt initial contient :
+\begin{itemize}
+    \item 5 tables de données brutes : \datatable{clients}, \datatable{commandes}, \datatable{lignes\_commandes}, \datatable{produits}, \datatable{visites},
+    \item 5 tables de dimensions: \datatable{canal}, \datatable{client}, \datatable{date}, \datatable{produit}, \datatable{statut\_commandes},
+    \item 2 tables de faits : \datatable{commandes}, \datatable{visites}.
+    \item 1 table SCD type 2 : \datatable{client}.
+\end{itemize}
+
+Le lignage des données est assuré par \dbt, qui orchestre
+les transformations et les chargements. La figure \ref{fig:db_lineage}
+montre le lignage des données dans l'entrepôt initial.
+
+\subsection{Planification de la maintenance}
+
+La maintenance de l'entrepôt de données est planifiées grâce à un système de tickets.
+La vue d'ensemble et un exemple de tickets sont présentés en figure
+\ref{fig:systeme_maitenance}.
+
+\begin{figure}[h]
+    \begin{subfigure}{0.55\textwidth}
+        \includegraphics[width=0.9\linewidth]{img/tickets_start.png}
+        \caption{Vue du tableau}
+        \label{fig:tickets_start}
+    \end{subfigure}
+    \begin{subfigure}{0.4\textwidth}
+        \includegraphics[width=0.9\linewidth]{img/ex_ticket.png}
+        \caption{Exemple de ticket de maintenance}
+        \label{fig:ex_ticket}
+    \end{subfigure}
+
+    \caption{Système de tickets de maintenance.}
+    \label{fig:systeme_maitenance}
+\end{figure}
+
+\subsection{Suivi du service}
+
+\ia{Un SLA (\emph{Service Level Agreement}) est un engagement formel entre un fournisseur
+    de service et ses utilisateurs, définissant le niveau de qualité de service attendu,
+    mesurable par des indicateurs précis, les SLI (Service Level Indicators).
+    Il répond à trois questions : quoi (quel service),
+    combien (quel niveau de performance), et que se passe-t-il en cas de non-respect.}
+
+Dans le cas d'une base de données, un SLA pourrait inclure des engagements sur :
+\begin{itemize}
+    \item \textbf{La disponibilité du service sur une période donnée}: par exemple, un engagement de 99,9\% de disponibilité mensuel.
+    \item \textbf{Le temps de traitement des incidents}: délai de prise en charge et délai de résolution pouvant être fonction du niveau de criticité
+    \item \textbf{La planification de fenêtre de maintenance}: plages de temps où la contrainte de disponibilité peut être levée.
+    \item \textbf{RPO (\emph{Recovery point objective}) et RTO (\emph{Recovery time objective})}: les indicateurs précisant la quantité maximale de perte de données et le temps maximal de restauration acceptable, en cas de rupture de service.
+    \item \textbf{Performance}: temps de réponse des requêtes, nombre de transactions par seconde, etc.
+\end{itemize}
+
+\noindent Dans le cadre de ce projet, je fais le choix de mettre en place les SLI suivants:
+\begin{enumerate}
+    \item Mesure (booléenne) de la santé du conteneur \postgresql, i.e. simple tentative de connexion régulière pour vérifier que la base de données est accessible.
+    \item Mesure de la latence d'une requête simple sur les tables de faits de la base de données (tables de haute valeur pour les équipes métiers).
+\end{enumerate}
+
+Le script \fichier{set\_monitoring\_db.sh} dans le dossier \folder{scripts/monitoring} permet de créer la base des données de monitoring et l'utilisateur associé, ainsi que les droits nécessaires via des requêtes SQL envoyées au sein du conteneur \postgresql. Le script
+\fichier{monitor.py} à la racine contient le code de surveillance de la base de données qui écrit à intervalle régulier les mesures décrites ci-dessus dans une table. Enfin le script \folder{streamlit/}\fichier{monitor\_viz.py} permet de visualiser ces mesures de latence à l'aide d'un tableau de bord streamlit (figure \ref{fig:monitor_dashboard}).
+
+\begin{figure}[p]
+    \centering
+    \includegraphics[width=0.95\textwidth]{img/monitor_dashboard.png}
+    \caption{Screenshot du tableau de bord de monitoring de la base de données}
+    \label{fig:monitor_dashboard}
+\end{figure}
+
+\begin{flushright}
+    \hyperref[ann:suivi_de_service_liens_utiles]{liens utiles} / \hyperref[ann:suivi_de_service_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+\subsection{Backup régulier}
+
+La stratégie de back-up mis en place repose sur les outils \pgdump\ et \pgdumpall\ pour la sauvegarde, et \psql\ et \pgrestore\ pour la restauration.
+
+Il faut distinguer deux types de backup:
+\begin{enumerate}
+    \item le backup complet qui reconstruira l'environnement de production (roles, privilèges, bases de données, etc.) dans sa globalité, et
+    \item le back-up partiel qui va sélectionner les entités particulières de la base \postgresql\ à sauvegarder.
+\end{enumerate}
+
+\program{pg\_dump} tombe dans la catégorie du back-up partiel puisqu'il va permettre de sauvegarder les données d'une base de données (mais ne considèrera pas par exemple la création des rôles ayant des droits sur cette table car ce sont des entités globales). \program{pg\_dumpall} tombe dans la catégorie du back-up complet (bien que certaines options permettent de limiter son périmètre).
+
+
+\subsubsection{Procédure de sauvegarde}
+
+\begin{wrapfigure}[18]{l}{0.22\textwidth}
+    \centering
+    \includegraphics[width=0.9\linewidth]{img/check_backup.png}
+    \caption{Backup 15min, rétention 3h}
+    \label{fig:backup}
+\end{wrapfigure}
+
+En guise de stratégie de sauvegarde et pour expérimenter les deux approches, nous allons
+procéder comme suit:
+\begin{itemize}
+    \item Procédure de sauvegarde complète que l'on restreint à l'extraction
+          des rôles et privilèges, avec \program{pg\_dumpall}
+    \item Procédure de sauvegarde partielle de la seule base de données
+          \datatable{datawarehouse\_e6}, avec \program{pg\_dump}
+\end{itemize}
+
+Un premier script \folder{scripts/backup/}\fichier{set\_backup\_roles.sh} permet la première sauvegarde
+et un deuxième \folder{scripts/backup/}\fichier{set\_backup\_db.sh} permet la seconde.
+À savoir qu'il existe deux formats possibles pour les fichiers-dump:
+ficher-sql contenant les commandes \sql\ pour
+reconstruire la sauvegarde à l'identique (via \psql) ou
+un format dédié compréssé (grâce à \techno{zlib}) utilisable par
+\program{pg\_restore} pour la reconstruction.
+
+Ces scripts permettent également d'opérer la période de rétention
+des fichiers en appliquant le temps de conservation des fichiers-sql/dump. C'est ensuite un \cron\ qui permet la régularité des opérations de back-up via la planification de l'exécution de ces deux scripts.
+
+Pour l'exercice d'apprentissage, une éxecution toutes les 15 minutes
+avec un période de rétention de 3 heures a été l'option choisie (voir fig. \ref{fig:backup}. En situation opérationnelle, une exécution quotidienne serait plus adaptée avec une retention d'une semaine ou d'un mois.
+
+\subsubsection{Procédure de restauration}
+
+La stratégie de restauration que nous allons voir va permettre de
+reproduire la base de données \database{datawarehouse\_e6} tout
+en conservant les accès et privilèges des différents utilisateurs.
+Afin de tester la procédure, un conteneur jetable sera mis en place
+afin que les deux tables (originale et restaurée) puissent co-exister.
+
+Afin d'assurer le succès de l'opération, il est nécessaire de
+reproduire les rôles dans le conteneur dédié à la restauration,
+puis de restaurer la base de données \database{datawarehouse\_e6}
+(l'ordre est important). Le script \folder{scripts/backup/}\fichier{test\_backup\_db.sh} opère cela après la mise en place d'un conteneur.
+
+Vient ensuite une phase de validation avec le lancement de plusieurs
+commandes \sql\ pour afficher certaines métriques :
+\begin{itemize}
+    \item Liste des rôles restaurés
+    \item Liste des droits sur la table \datatable{fact\_commandes}
+    \item Nombre d'entrées dans chaque table
+\end{itemize}
+Ces sorties sont à comparer avec les mêmes commandes exécutées sur le
+conteneur original pour s'assurer qu'il n'y a aucune différence.
+
+Enfin, les tests \dbt\ sont une validation supplémentaire, plus
+approfondie permettant de s'assurer qu'il n'y a pas eu de corruption
+des données, ou de perte de données entraînant une violation des
+règles mises en place dans les modèles des tables et de leurs
+relations.
+
+\begin{flushright}
+    \hyperref[ann:backup_regulier_difficultes]{Difficultés rencontrées} /
+    \hyperref[ann:backup_regulier_liens_utiles]{liens utiles} / \hyperref[ann:backup_regulier_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+%
+
+%
+
+%
+
+
+\section{Opération de maintenance}
+
+\subsection{Techno \dbt}
+
+\dbt\ s'intègre dans l'approche ELT (\emph{Extract, Load, Transform}) qui se démocratise avec l'avénement du cloud et en particulier des technologies de datawarehouse et la réduction du coût de stockage qui permet de ne pas dépendre de machines \emph{on-premise} et de leur gestion. Cette approche déploie la puissance d'un datawarehouse pour la transformation en les chargeant telles qu'elles sont au préalable. Les données sont ainsi plus facilement et rapidement gérables et traçables. \dbt\ fournit une solution de transformation de données propres et prêtes pour l'analyse, en poussant l'automatisation et la collaboration sur la modélisation et le traitement des données. Le principe derrière \dbt\ et de reproduire les bonnes pratiques en développement d'applications pour le développement de modèles analytiques de données.
+
+\subsection{Ajout d'un datamart}
+
+\subsubsection{Intégration d'une nouvelle source de données}
+
+Le fichier \fichier{raw\_retours.csv} a été ajouté aux \folder{seeds}
+\dbt, pour l'intégrer comme une nouvelle source de données. En parallèle,
+un fichier \fichier{schema.yml} a été générée pour fournir la description
+de tous les fichiers-csv présent, à des fins de documentation.
+
+Ensuite la commande:
+\begin{lstlisting}[language=bash]
+dbt seed
+\end{lstlisting}
+va s'emparer du nouveau fichier-csv et créer une table dans la base
+de données.
+
+\subsubsection{Modèle de staging des données brutes}
+
+Le modèle de staging selon \dbt, est un modèle où peu de transformations sont opérées à partir des données des sources. Il est recommandé de les matérialiser en vues plutôt qu'en table et servent essentiellement à renommer et caster les colonnes, et à effectuer des tests sur ces données pour les normaliser (unicité, non-null, valeurs autorisées, ...).
+
+Dans \folder{models}, un fichier \fichier{stg\_retours.sql} a été créé
+pour modéliser la table de staging des données de retours.
+
+\begin{lstlisting}[language=SQL]
+with source as (
+    select * from {{ ref('raw_retours') }}
+),
+
+renamed as (
+    select
+        retour_id::integer,
+        command_id::integer,
+        produit_id::integer,
+        client_id::integer,
+        date_retour::date,
+        motif,
+        montant_rembourse::numeric(10,2)
+    from source
+)
+\end{lstlisting}
+
+En complément, le fichier \fichier{schema.yml} a été complété pour inclure la documentation et les tests d'unicité, non-nullité et de valeurs autorisées sur les différents champs de la table \datatable{retours}.
+
+Pour finir la commande:
+\begin{lstlisting}[language=bash]
+dbt build --select stg_retours
+\end{lstlisting}
+Permet la génération de la vue et l'exécution des tests programmés
+dans le fichier \fichier{schema.yml}.
+
+\subsubsection{Création de la table des faits associés aux nouvelles données}
+
+La table des faits à intégrer respecte un schéma en étoile déjà en place au sein de \dbt. Ainsi, la table des faits \datatable{fact\_retours} doit être reliée aux tables de dimensions existantes
+(on parle de dimensions conformes).
+
+Dans \folder{models/facts}, un fichier \fichier{fact\_retours.sql}
+a été créé pour modéliser la table. Cette fois, la table est matérialisée comme une table car elle est destinée à être interrogée par les équipes métiers et analystes. Entre autres, ce fichier contient les jointures de tables entre deux modèles de staging et les tables de dimensions existantes :
+
+\begin{lstlisting}[language=SQL]
+select
+    r.retour_id,
+    r.commande_id,
+    to_char(c.date_commande, 'YYYYMMDD')::integer   as date_commande_id,
+    to_char(c.date_expedition, 'YYYYMMDD')::integer as date_expedition_id,
+    to_char(c.date_livraison, 'YYYYMMDD')::integer   as date_livraison_id,
+    to_char(r.date_retour, 'YYYYMMDD')::integer   as date_retour_id,
+    dc.client_id,
+    dp.produit_id,
+    r.motif,
+    l.montant_ligne as montant_paye,
+    r.montant_rembourse,
+    case
+        when c.date_livraison is not null
+        then (r.date_retour - c.date_livraison)
+        when c.date_commande is not null
+        then (r.date_retour - c.date_commande)
+        else null
+    end as delai_retour_jours
+from retours r
+left join commande c       on r.commande_id = c.commande_id
+left join lignes l         on r.commande_id = l.commande_id and r.produit_id = l.produit_id
+left join dim_client dc    on r.client_id = dc.client_id
+left join dim_produit dp   on r.produit_id = dp.produit_id
+\end{lstlisting}
+
+En complément le fichier \fichier{schema.yml} a été complété pour
+inclure la documentation, les tests d'unicité, non-nullité et de valeurs autorisées ainsi que les relations avec les tables de dimension.
+
+\noindent Pour finir la commande:
+\begin{lstlisting}[language=bash]
+dbt build --select fact_retours
+\end{lstlisting}
+permet la matérialisation de la table et l'exécution des tests programmés dans le fichier \fichier{schema.yml}.
+
+\begin{flushright}
+    \hyperref[ann:ajout_datamart_difficultes]{Difficultés rencontrées} /
+    \hyperref[ann:ajout_datamart_liens_utiles]{liens utiles} / \hyperref[ann:ajout_datamart_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+\subsection{Tests et documentations \dbt}
+
+\subsubsection{Tests génériques}
+
+Ils sont intégrés aux fichiers \fichier{schema.yml} et permettent de vérifier l'unicité, la non-nullité, l'appartenance à des valeurs autorisées, et la validité des relations entre modèles de données.
+
+\subsubsection{Tests singuliers}
+
+En complément des tests génériques, il est possible d'implémenter des tests singuliers propres à la logique métier à l'aide de fichier \sql. Par défaut un test \dbt\ valide est une requête \sql\ qui retourne 0 ligne de données.
+
+Un exemple de test singulier a été mise en place dans le dossier \folder{tests}: \\
+\fichier{asser\_fat\_retours\_\_delai\_retours\_jours\_positive.sql}
+\begin{lstlisting}[language=sql]
+select
+    retour_id,
+    delai_retour_jours
+from {{ ref('fact_retours') }}
+where delai_retour_jours IS NOT NULL AND delai_retour_jours < 0
+\end{lstlisting}
+Ce test permet de s'assurer que le délai de retours n'est jamais
+négatif (ce serait une aberration).
+
+\subsubsection{Écriture de la documentation}
+
+Comme mentionné précédemment, la première documentation \dbt\ est intégrée aux fichiers \fichier{schema.yml}. Elles ont étaient complétées à chaque étape de la maintenance. Leur intégration peut se faire directement dans les fichiers ou alors via une référence à un bloc de documentation dans un fichier-md existant. Un exemple de documentation séparée est le fichier \fichier{models.md}
+dans \folder{models/}:
+\begin{lstlisting}[]
+{% docs dim_client %}
+Dimension client issue du systeme e-commerce.
+Contient les informations de chaque client avec son segment (Premium/Standard),
+sa localisation et sa date d'inscription.
+Utilisee en jointure avec fact_commandes et fact_visites via client_id.
+{% enddocs %}
+
+{% docs dim_produit %}
+Dimension produit du catalogue e-commerce.
+Contient les caracteristiques de chaque produit : categorie, marque, prix,
+cout d'achat et marges calculees.
+{% enddocs %}
+
+...
+\end{lstlisting}
+
+\subsubsection{Génération de la documentation}
+
+En \dbt, la documentation générée, basée sur la documentation écrite (voir section
+précédente), l'est à l'aide de la commande:
+\begin{lstlisting}[language=bash]
+dbt docs generate
+\end{lstlisting}
+Cette commande va générer un site web statique dans le dossier \folder{target} qui peut être visualisé avec la commande:
+\begin{lstlisting}[language=bash]
+dbt docs serve
+\end{lstlisting}
+Ce site permet de parcourir les documentations spécifiques de chaque
+seed et modèle (colonnes, types, descriptions, contraintes, tests, voir figure \ref{fig:dbt_serve_table}).
+Surtout, il permet de visualiser le lignage des données et les relations entre les modèles de données. La figure \ref{fig:dbt_lineage_new} montre le lignage des données après l'intégration de la nouvelle source de données et la création de la table des faits associée.
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[width=\textwidth]{img/dbt_serve_table.png}
+    \caption{Page de documentation générée par \dbt\ pour la table \texttt{fact\_retours}}
+    \label{fig:dbt_serve_table}
+
+    \includegraphics[width=\textwidth]{img/lineage_modif.png}
+    \caption{Lignage des données dans l'entrepôt après maintenance}
+    \label{fig:dbt_lineage_new}
+\end{figure}
+
+\begin{flushright}
+    \hyperref[ann:tests_docs_dbt_difficultes]{Difficultés rencontrées} /
+    \hyperref[ann:tests_docs_dbt_liens_utiles]{liens utiles}
+\end{flushright}
+
+%
+
+%
+
+%
+
+\section{Gestion des accès et procédure d'ajout d'un nouveau rôle}
+
+\subsection{Audit de la situation avant toute opération}
+
+Le script \folder{scripts/access/}\fichier{00\_audit.sql} est un ensemble de requêtes \sql\ qui permettent de récupérer
+toutes les informations pertinentes sur les rôles et privilèges existants dans la base de données. Il est exécuté via le script \folder{scripts/access/}\fichier{00\_audit.sh}.
+
+\begin{lstlisting}[language=sql]
+SELECT version();
+\end{lstlisting}
+récupère la version de \postgresql\ de la base de données en cours d'utilisation.
+\begin{lstlisting}[language=sql]
+\du
+\end{lstlisting}
+récupère la liste des rôles existants sur la base de données, ainsi que leurs attributs.
+\begin{lstlisting}[language=sql]
+\dn+
+\end{lstlisting}
+récupère la liste détaillée des schémas.
+\begin{lstlisting}[language=sql]
+\dp public.*
+\end{lstlisting}
+récupère la liste des privilèges et règles sur les objets du schéma public.
+\begin{lstlisting}[language=sql]
+\ddp
+\end{lstlisting}
+récupère la liste des privilèges par défaut sur les objets.
+\begin{lstlisting}[language=sql]
+SELECT datname, datacl FROM pg_database WHERE datname = current_database();
+\end{lstlisting}
+récupère la liste des privilèges sur la base de données en cours d'utilisation. Pour information, le motif \inlinecode{[<role1>]=[C][T][c]/<role2>} signifie que le rôle 1 a les privilèges de création de nouveaux schémas au sein de la base de données (C), de création de tables temporaires lors de l'utilisation de la base de données (T) et de connexion à la base de données (c), et que ces privilèges ont
+été accordés par le rôle 2.
+
+\subsection{Ajout d'un role}
+
+Un script \folder{scripts/access/}\fichier{01\_create\_role.sql} a été créé pour ajouter un nouveau rôle à la base de données.
+\begin{lstlisting}[language=sql]
+CREATE ROLE reporting NOLOGIN
+\end{lstlisting}
+Ce rôle \role{reporting} est un groupe destiné à regrouper les utilisateurs ayant besoin d'accéder aux données pour le reporting.
+\begin{lstlisting}[language=sql]
+CREATE ROLE <role_name> LOGIN PASSWORD <password> IN ROLE reporting
+   NOSUPERUSER NOCREATEDB NOCREATEROLE CONNECTION LIMIT 5'
+\end{lstlisting}
+Ce rôle \role{<role\_name>} est un utilisateur qui peut se connecter
+à la base de données avec le mot de passe \texttt{<password>}.
+Les privilèges de création lui sont retirés, et on limite le nombre de connexions simultanées.
+
+\subsection{Attribution des privilèges}
+
+Un script \folder{scripts/access/}\fichier{02\_grant\_privileges.sql} a été créé pour attribuer les privilèges nécessaires au rôle
+\role{reporting} (et donc à ses utilisateurs). Il s'éxecute via le
+script \folder{scripts/access/}\fichier{02\_grant\_privileges.sh}. La commande \sql\ \inlinecode{GRANT} est utilisée de différentes manières pour accorder des droits de connexions, d'usage et de sélection sur différentes tables. Un cas particulier est la table \datatable{dim\_client} contenant des données personnelles. L'application du RGPD impose de restreindre l'accès à certaines données pour le rôle \role{reporting}.
+
+Aussi intéressantes soient-elles à découvrir, la gestion des attributions via \psql\ ne sont malheureusement pas résilients à un projet \dbt. En effet, lorsqu'une commande \inlinecode{dbt build} est exécutée, les objets
+sont détruits durant le processus avant d'être récréés. Les privilèges
+étant apposés sur les objets, ils disparaissent avec eux. Pour assurer
+la persistence des privilèges, il est alors nécessaire de les ajouter
+dans les fichiers de configuration du projet \dbt.
+
+\noindent Exemple au niveau de \fichier{dbt\_project.yml}:
+\begin{lstlisting}[]
+models:
+  datawarehouse_e6:
+    facts:
+      +materialized: table
+      +grants:
+        select: ['reporting']
+\end{lstlisting}
+
+\noindent Exemple au niveau des modèles, \fichier{schema.yml}:
+\begin{lstlisting}[]
+models:
+  - name: dim_produit
+    description: "{{ doc('dim_produit') }}"
+    config:
+      grants:
+        select: ['reporting']
+\end{lstlisting}
+
+Pour une solution plus granulaire, comme sur \datatable{dim\_client} qui contient des données personnelles, il est nécessaire d'utiliser un post-hook directement dans l'en-tête du fichier du modèle \fichier{dim\_client.sql}:
+\begin{lstlisting}[]
+{{ config(
+    materialized='table',
+    post_hook="grant select (client_id, ville, code_postal, pays, segment,
+                             date_inscription, actif)
+               on {{ this }} to reporting"
+) }}
+\end{lstlisting}
+
+\begin{flushright}
+    \hyperref[ann:attribution_privileges_difficultes]{Difficultés rencontrées} /
+    \hyperref[ann:attribution_privileges_liens_utiles]{liens utiles} /
+    \hyperref[ann:attribution_privileges_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+
+\subsection{Tests de validation}
+
+Les tests de validation de la création du nouvel utilisateur sont faits
+grâce au scrypt \python\ \folder{scripts/access/tests/}\fichier{test\_reporting\_access.py}.
+Ce script utilise \pytest\ pour exécuter une série de tests unitaires
+couvrant une large gamme de scénarios d'accès à la base de données et
+encode le comportement attendu dans le cas de l'utilisateur \role{reporter} du groupe \role{reporting}. La commande pour lancer ces tests est:
+\begin{lstlisting}[language=bash]
+pytest scripts/access/tests -v -rx
+\end{lstlisting}
+
+\begin{flushright}
+    \hyperref[ann:tests_validation_difficultes]{Difficultés rencontrées} /
+    \hyperref[ann:tests_validation_liens_utiles]{liens utiles}
+\end{flushright}
+
+
+\subsection{RGPD}
+
+Dans le cadre de la RGPD, les données sensibles identifiées se situent
+toutes dans la dimension \datatable{client}:
+\begin{itemize}
+    \item \inlinecode{nom}, \inlinecode{prenom} et \inlinecode{nom\_complet} sont indéniablement des données identifiantes
+    \item \inlinecode{email} est également une donnée identifiante sensible
+    \item \inlinecode{date\_naissance}, \inlinecode{age} ainsi que \inlinecode{ville}, \inlinecode{code\_postal} ne sont pas identifiant pris isolément
+          mais leur couplage peut amener à une situation d'identification de personnes. À ce titre,
+          ces données doivent également être protégées.
+\end{itemize}
+
+La stratégie de gestion des accès à ces données a été mis en place précédemment en n'autorisant pas la lecture de ces colonnes pour le rôle \role{reporting}. Certaines données pourraient être transformées pour être diluées dans une vue des données anonymisées issue de \datatable{dim\_client}.
+
+\subsubsection*{Registre des activités de traitements}
+
+Ce registre est décrit dans l'article 30 du RGPD. Il est de la responsabilité du responsable de traitement de recenser l'ensemble des traitements mis en oeuvre au moyen d'une fiche du registre par traitement. Un traitement est une activité qui a une finalité. Le nom et les coordonnées de l'organisme, ainsi que le nom et les coordonnées du DPO (\emph{Délégué à la Protection des Données}) si un tel est désigné. Une fiche doit comporter:
+\begin{itemize}
+    \item Le nom et les coordonnées du responsable conjoint du traitement.
+    \item La ou les finalités du traitement.
+    \item Les catégories des personnes concernées.
+    \item Les catégories de données personnelles (ex: identité, situation familiale, économique, données bancaires, de connexion, de localisation, etc.).
+    \item Les catégories de destinataires auxquels les données à caractère personnel ont été ou seront communiquées.
+    \item La durée de conservation des différentes catégories de données.
+    \item Une description générale des mesures de sécurité techniques et organisationnelles mises en oeuvre.
+\end{itemize}
+
+\subsubsection*{Procédure de tri/purge}
+
+\noindent Les données personnelles sont présentes à plusieurs endroits:
+\begin{itemize}
+    \item \folder{seed}: le fichier \fichier{raw\_clients.csv} est chargé initialement.
+    \item \folder{raw}: la table \datatable{raw\_clients} contient ces mêmes données sans modification.
+    \item \folder{staging}: la vue \datatable{stg\_clients} contient ces données normalisées.
+    \item \folder{dimension}: la table \datatable{dim\_clients} recensent ces données dans le schéma final en étoile prêtes à l'emploi pour analyse.
+    \item \folder{back-up}: les fichiers \fichier{full\_yyyymmdd\_hhmm.dump} contiennent des copies de ces données à l'instant de l'opération de back-up.
+\end{itemize}
+
+La procédure de tri/purge devra alors effacer une donnée sur l'ensemble de ces supports.
+\dbt\ est à nouveau très utile pour effacer une donnée à la source et la
+propager à travers le DAG. Après anonymisation de la donnée
+(e.g \inlinecode{nom, prenom, nom\_complet = anonymous}, \inlinecode{email=anonymous@email.fr},
+\inlinecode{date\_de\_naissance=<année\_conservée>-01-01}, \inlinecode{code\_postal=<dep\_conservée>999}), la commande suivante va propager cette anonymisation à travers les couches:
+\begin{lstlisting}[language=bash]
+dbt build
+\end{lstlisting}
+Attention certaines règles de tests peuvent être violées à la suite d'une purge (test de non-nullité ou d'unicité par exemple). Deux cas de figure pour déclencher la procédure de purge existent:
+\begin{itemize}
+    \item Une règle automatique sur la suppression des données personnelles doit être programmée à l'issue d'une période d'inactivité. Dans ce cas, la mise en place d'un \cron\ sera adaptée pour vérifier régulièrement si chaque utilisateur est toujours dans le cas prévu de conservation de ses données personnelles.
+    \item Des demandes explicites de suppression des données personnelles peuvent survenir. Dans ce cas, le lancement de la purge se fait de façon manuelle.
+\end{itemize}
+
+En ce qui concerne la présence des données personnelles dans les back-up, ceux-ci sont déjà supprimées automatiquement dans des délais court termistes. La procédure de purge stipule alors simplement qu'une purge doit être réexécutée en cas d'une opération de restauration de la base de données.
+
+\begin{flushright}
+    \hyperref[ann:rgpd_liens_utiles]{liens utiles} /
+    \hyperref[ann:rgpd_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+
+
+
+
+\section{Variation d'une dimension}
+
+\subsection{SCD de Ralph Kimball}
+
+Ralph Kimball a introduit le schéma en étoile dans la modélisation
+des données. Dans cette modélisation, les tableaux de dimensions sont
+peu variables par rapport aux tableaux de faits. Mais ils ne sont
+pas pour autant invariables, on dit qu'ils changent lentement, appelés SCD (\emph{Slow Changing Dimension}).
+
+Les types de SCD réflètent différentes manières de traiter un tableau
+de dimensions. Ils permettent de mettre à jour ces tableaux suivant un protocole propre et gèrent l'historique de façon différente.
+
+\subsubsection*{SCD type 1}
+
+Si un enregistrement d'un tableau de dimensions est modifié,
+les valeurs existantes de cet enregistrement sont écrasées par les nouvlles (pas d'ajout d'une nouvelle ligne). S'il l'enregistrement n'est pas présent, il est inséré (ajoutant une nouvelle ligne). On parle d'"upserting". Ce protocole est utilisé lorsqu'il n'y a pas de besoin de conserver un historique des données. Il n'y a alors pas d'enregistrement en double. La table de dimension renseigne
+sur l'état le plus récent des données, rendant les requêtes simples mais limités.
+
+\noindent \begin{tabularx}{\linewidth}{|l|l|l|L|}
+    \hline
+    id\_client & prénom & nom   & email                  \\
+    \hline
+    1          & Bob    & Dylan & bob.dylan@un-email.com \\
+    \hline
+\end{tabularx}
+
+
+\subsubsection*{SCD type 2}
+
+Dans un SCD type 2, lorsqu'un enregistrement de la table de dimensions évolue, les valeurs composant l'enregistrement précédent sont conservées. En pratique, une (ou plusieurs) colonne(s) supplémentaire(s) est(sont) ajoutée(s) comme attribut(s) de l'état de l'enregistrement ou sa période de validité. La solution la plus répandue est d'ajouter deux colonnes dates fournissant l'intervalle de validité de l'enregistrement. Ce type SCD est le plus adapté lorsqu'on a besoin d'effectuer une analyse temporelle sur les données, offrant une profondeur pour des prises de décision côté métier.
+
+\noindent \begin{tabularx}{\linewidth}{|l|l|L|l|l|}
+    \hline
+    id\_produit & nom      & prix\_unitaire & valid\_from & valid\_to   \\
+    \hline
+    1           & Super-PC & 999.99         & 2022-01-01  & 2024-01-01  \\
+    1           & Super-PC & 1099.99        & 2024-01-01  & 2026-01-01  \\
+    1           & Super-PC & 1145.99        & 2026-01-01  & \emph{NULL} \\
+    \hline
+\end{tabularx}
+
+\subsubsection*{SCD type 3}
+
+Avec le SCD type 3, on dispose d'un entre-deux. La solution est de garder, pour une ou plusieurs colonnes de la table des dimensions, deux valeurs (courante et précédente). C'est une solution adaptée pour une dimension très peu variable avec un besoin de garder l'historique tout en conservant l'unicité des enregistrements. On duplique à la place la liste de colonnes dont on souhaite l'historique au sein même d'un enregistrement. En revanche, au delà de deux modifictions d'un enregistrement, il commence à y avoir perte de données, d'où l'intérêt de ne l'appliquer qu'à des dimensions rarement variables.
+
+\noindent \begin{tabularx}{\linewidth}{|l|L|L|l|}
+    \hline
+    id\_user & password\_current    & password\_previous         & updated\_at \\
+    \hline
+    1        & un\_j0l1\_mOt2P4\$\$ & pwd\_A\_ne\_pas\_R3ut1l1sé & 2026-01-01  \\
+    \hline
+\end{tabularx}
+
+\subsection{Les SCD dans \dbt}
+\subsubsection*{Focus \datatable{scd\_client} (type 2)}
+
+Une table de dimension SCD de type 2 est mise à disposition dans ce projet: \fichier{scd\_client}. Dans \dbt, un SCD type 2 est appelé un \emph{snapshot}. Celui-ci a été mise en place à l'aide d'une méthode dépréciée puisqu'il est défini directement dans le \folder{snapshots/}\fichier{scd\_client.sql}, à l'aide de commandes \jinja. Aujourd'hui il est recommandé de déclarer un snapshot dans un fichier \folder{snapshots/}\fichier{snapshots.yml} comme suit:
+\begin{lstlisting}[]
+snapshots:
+  - name: scd_client_new
+    relation: ref('stg_clients')
+    config:
+      schema: snapshots
+      unique_key: client_id
+      strategy: check
+      check_cols: [ville, code_postal, segment]
+\end{lstlisting}
+
+La stratégie choisie est \inlinecode{check}. Elle compare une liste de
+colonnes entre ses valeurs courantes et ses valeurs historiques pour
+déterminer si un enregistrement a changé. À noter qu'il existe une
+autre stratégie, \inlinecode{timestamp} qui utilise une colonne \inlinecode{updated\_at} pour déterminer si un enregistrement a changé. Cette dernière est recommandée lorsqu'elle est possible. Dans le cadre de l'exercice, les colonnes choisies pour la stratégie de snapshot sont \inlinecode{ville}, \inlinecode{code\_postal}
+et \inlinecode{segment}. Des changements sur les autres colonnes ne déclencheront pas d'historisation.
+
+Pour connaître les snapshots du projet \dbt, la commande suivant permet de les lister:
+\begin{lstlisting}[language=bash]
+dbt ls --resource-type snapshot
+\end{lstlisting}
+
+\subsubsection*{Exécution d'une évolution de \datatable{scd\_client}}
+
+Supposons qu'un client renseigne un déménagement. Pour cela dans le \folder{seed}, nous allons modifier les valeurs de \inlinecode{ville} et \inlinecode{code\_postal} du client. On modifie directement l'enregistrement associé dans le fichier \fichier{raw\_client.csv} et on exécute les commandes:
+\begin{lstlisting}[language=bash]
+dbt seed --select raw_clients
+dbt snapshot --select scd_client --select scd_client_new
+\end{lstlisting}
+Il n'est pas nécessaire d'exécuter \inlinecode{dbt run} pour le modèle de staging car c'est une vue. Il voit donc toujours
+l'état courant de la table à laquelle il dépend. Une alternative recommandé est de laisser \dbt\ gérer l'ordre de reconstruction, tout en lançant les tests:
+\begin{lstlisting}[language=bash]
+dbt build --select +scd_client --select +scd_client_new
+\end{lstlisting}
+\noindent La figure \ref{fig:scd_client_change} montre le SCD type 2 en action.
+
+En faisant une jointure entre \datatable{fact\_commandes} et
+\datatable{scd\_client\_new}, il est possible de récupérer la ville du
+client au moment où il a passé une commande. La requête \sql\ est placé dans le dossier \folder{analyses}:
+\begin{lstlisting}[language=sql]
+select
+    c.commande_id,
+    c.client_id,
+    c.date_commande,
+    c.montant_total,
+    v.ville        as ville_a_la_commande,
+    v.code_postal  as code_postal_a_la_commande,
+    v.segment      as segment_a_la_commande,
+    d.ville        as ville_actuelle,
+    d.segment      as segment_actuel
+from commandes c
+left join versions v
+       on  c.client_id = v.client_id
+       and c.date_commande >= v.valid_from
+       and c.date_commande <  v.valid_to
+left join {{ ref('dim_client') }} d
+       on c.client_id = d.client_id
+where v.client_id = 2
+\end{lstlisting}
+\noindent La figure \ref{fig:command_with_adress} montre le résultat.
+
+\subsubsection*{Et le SCD de type 1 en \dbt ?}
+
+Selon les mécanismes \dbt, une table est une SCD de type 1. Si
+un enregistrement est modifié dans \folder{seed}, alors le changement
+sera écrasé partout à travers le DAG (donc dans \datatable{stg\_produits} et \datatable{dim\_produits}).
+Comme les prix unitaires des produits sont
+présents dans les données brutes des lignes de commandes, le SCD de type 1 se justifie sur le catalogue de produits (pas besoin de conserver l'historique).
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{img/scd_client_change.png}
+    \caption{Changement dans le SCD client}
+    \label{fig:scd_client_change}
+
+    \includegraphics[width=\textwidth]{img/command_with_adress.png}
+    \caption{Affichage de l'adresse au moment de la commande.}
+    \label{fig:command_with_adress}
+\end{figure}
+
+\begin{flushright}
+    \hyperref[ann:scd_dbt_liens_utiles]{difficultés rencontrées} /
+    \hyperref[ann:scd_dbt_liens_utiles]{liens utiles} /
+    \hyperref[ann:scd_dbt_aller_plus_loin]{pour aller plus loin}
+\end{flushright}
+
+\section{Scalabilité}
+
+\subsection{Procédure d'ajout d'un datamart}
+
+Un DM (\emph{datamart}) est un "morceau" de DW (\emph{datawarehouse}) regroupant les tables suivant une logique métier. Par exemple un DW peut regroupe un DM Finance, un DM RH, un DM Produits, un DM Ventes,  \dots. Les datamarts étant destinés aux analystes et aux métiers, ils sont plus souvent vues comme le regroupement de tables de faits et de tables de dimensions (et éventuellement de vues ou tables agrégées pour des usages fréquents). Lorsqu'une table de dimensions fait partie de plusieurs datamarts, elles sont considérées comme conformes.
+
+Le projet \dbt\ parcouru dans ce rapport suit l'approche \emph{bottom-up} de Kimball. Des datamarts dimensionnels sont construits suivant un processus métier. On a par exemple le domaine \database{ventes} dont le DM s'articulerait autour de la table de faits \datatable{fact\_commandes}, et le domaine \database{marketing} dont le DM s'articulerait autour de la table de faits \datatable{fact\_visites}. Ces datamarts sont reliés entre eux
+formant un entrepôt logique.
+
+Le travail détaillé précédemment autour de l'ajout dans \folder{seed} de \fichier{raw\_retours.csv} n'est autre que l'intégration d'un nouveau DM concernant le domaine \database{Retour}. En résumé, la procédure pour l'ajouter a été la suivante :
+\begin{enumerate}
+    \item Analyse du domaine métier et granularité de la source de données
+    \item Intégration de la source (\folder{seed})
+    \item Normalisation des données (\folder{staging})
+    \item Identification des dimensions conformes
+    \item Création de nouvelles dimensions (si besoin, \folder{dimensions})
+    \item Construction de la table de faits en référençant les dimensions (\folder{facts})
+    \item Ajout de tests (\fichier{schema.yml})
+    \item Gestion des droits d'accès (\fichier{dbt\_project.yml} et \fichier{schema.yml})
+    \item Mise à jour de la documentation (\fichier{schema.yml} et \fichier{models.md})
+\end{enumerate}
+
+Jusqu'à présent, tout a était inséré dans un schéma publique. Une meilleure organisation serait de mettre en place un schéma par couche puis par datamart.
+
+Il existe également une autre approche (\emph{top-down}) de Bob Inmon qui renverse le processus. Selon cette approche, le DW se construit d'abord sur une centralisation des données comme source unique de vérité, puis la création des datamarts de façon périphérique.
+
+\begin{flushright}
+    \hyperref[ann:ajout_dm_liens_utiles]{liens utiles}
+\end{flushright}
+
+
+
+\subsection{Augmentation de l'espace de stockage}
+
+Au rythme où les données affluent dans la base \postgresql, celle-ci
+prend du volume. Il arrive un moment où ce volume de la base de données peut devenir critique par rapport à la taille du support de stockage
+(serveur, VM avec espace alloué, ...). L'idée d'une procédure d'augmentation
+de l'espace de stockage couvrirait:
+\begin{enumerate}
+    \item le suivi régulier silencieux de la taille de la base relativement à l'espace disponible,
+    \item le système d'alertes lorsque le ratio atteint $X\%$ pour anticiper un besoin de migration ou d'allocation supplémentaire de mémoire, et
+    \item le lancement d'une procédure de migration lorsque besoin.
+\end{enumerate}
+
+\subsubsection*{Suivi régulier de l'espace de stockage}
+
+Dans le conteneur \postgresql, nous avons déja mis en place une base de données \database{monitoring} pour le suivi du service. Dans cette base de données, on ajouterait une nouvelle table pour stocker des logs d'un suivi régulier de l'espace de stockage.
+
+En python \inlinecode{shutil.disk\_usage(PGDATA)} permettrait d'obtenir les espaces disques du système \postgresql\ total, utilisé et libre sur la base desquels on peut établir un ratio. Exécuter toutes les heures, un script incorporant cette commande pourrait enregistrer des mesures de l'espace de stockage. À noter également que les mesures pourraient intégrer l'usage de \inlinecode{pg\_database\_size} en \psql, qui permet de mesurer l'espace disque utilisé par une base de données donnée.
+
+Si le ratio établi est inférieur à, e.g., 70\%, rien n'est déclenché.
+Dans l'autre cas, un avertissement est émis pour permettre de déclencher des opérations: 1) nettoyage de logs, purge RGPD de données, \dots ; 2) préparation d'une migration, planification de l'extension pour se laisser du temps. Si le ratio dépasse 90\%, on pourrait passer en mode critique, nécessitant d'opérer une perte de donnée si on veut privilégier la continuité du service, par exemple.
+
+\subsection*{Migration de la base vers un espace plus grand}
+
+À ce niveau, la procédure de back-up est réutilisée. Le principe
+du back-up est précisément de rétablir la base de données. C'est évidemment une opération souhaité lors d'une migration.
+
+Avant toute choise, il serait préférable d'interrompre le service durant l'opération. Cela nécessite de mettre en pause l'afflux des données entrantes. Néanmoins, si le service doit absolument être maintenu (pour respecter le SLA), alors il sera nécessaire de marquer les données arrivée après la dernière opération de backup pour les reproduire après migration.
+
+L'environnement \postgresql\ est reproduit sur le nouvel espace plus grand (e.g. dans notre cas pratique, une copie modifiée du docker compose). Les données déchargées durant le back-up sont ensuite chargées dans la nouvelle base via la phase de restauration de la procédure du back-up, en adaptant les hôtes et les ports au besoin.
+
+Puis, si le service a été interrompu, les flux de données entrantes reprennent en étant dupliqués pour pointer vers les deux bases de données alors co-existantes, l'ancienne et la nouvelle. Si le service n'a pas été interrompu, on récupère les données arrivées tardivement pour les répercuter aussi sur le nouvelle base afin de ne pas perdre de données.
+
+Enfin, un protocole de test pour s'assurer de la récupération des données serait ensuite mis en place pour détecter si perte de données il y a eu (e.g. en comparant le nombre de lignes par tables, la présence des données à l'identique après le timestamp du backup, \dots). Après quelques jours de coexistence, si la nouvelle base est validée, l'ancienne base de données peut alors être supprimée.
+
+\begin{flushright}
+    \hyperref[ann:augmentation_disque_liens_utiles]{liens utiles}
+\end{flushright}
+
+\begin{figure}[b!]
+    \centering
+    \includegraphics[width=\textwidth]{img/lineage_final.png}
+    \caption{Lignage des données dans l'entrepôt final}
+    \label{fig:db_lineage_final}
+\end{figure}
+
+\section{Conclusion}
+
+Ce rapport a couvert l'ensemble des points à traiter lors d'une opération de maintenance portant sur un datawarehouse. Certaines tâches ont été exécutées et le dépôt \github\ \url{https://github.com/cesarGattano/Takeoff-DBT} permet d'en explorer les résultats. Le lignage final de la base de données
+est présenté en figure \ref{fig:db_lineage_final} et montre comment les différents ajouts s'insèrent en comparaison avec l'état initial présenté en figure \ref{fig:db_lineage}.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\pagebreak
+\appendix
+
+\section{Exemple d'une fiche de traitament (RGPD)} \label{ann:fiche_traitement}
+
+Voici un exemple d'une fiche de traitament du registre des traitements
+qui doit être tenu dans le cadre de la RGPD.
+
+\paragraph{Description du traitement}
+\begin{itemize}
+    \item {\bf Nom du traitement:} Suivi des retours
+    \item {\bf No/REF:} XXXXX
+    \item {\bf Date de création du traitement:} 5 Octobre 2026
+    \item {\bf Date de mise à jour du traitement:} 6 Octobre 2026
+\end{itemize}
+
+\paragraph{Acteurs}
+\begin{itemize}
+    \item {\bf Responsable du traitement:} Jean Durant - 1 grande avenue 12345 Patelin France 01.02.03.04.05 jean.durant@unmail.com
+    \item {\bf DPO:} Bob Francis - 1 petite impasse 12345 Patelin France 01.02.03.04.05 bob.francis@unmail.com
+\end{itemize}
+
+\paragraph{Finalités}
+\begin{itemize}
+    \item {\bf Finalité principale:} Suivi des retours de produits
+    \item {\bf Sous-finalité 1:} Suivi des remboursements après retour
+    \item {\bf Sous-finalité 2:} Contrôle qualité des produits post-vente
+    \item {\bf Sous-finalité 3:} Suivi des délais de retours
+    \item {\bf Sous-finalité 3:} Communication avec le client
+\end{itemize}
+
+\paragraph{Catégories des données personnelles concernées}
+\begin{itemize}
+    \item {\bf Données d'identification:} [\texttt{dim\_client}] nom, prenom, nom\_complet, email, ville, code postal, segment \\
+          Durée de conservation: 1 an d'inactivité sur le compte
+\end{itemize}
+
+\paragraph{Catégories des personnes concernées}
+\begin{itemize}
+    \item {\bf Catégorie de personnes 1:} client: identification du client ayant passé commande
+\end{itemize}
+
+\paragraph{Destinataires des personnes concernées}
+\begin{itemize}
+    \item {\bf Destinataire:} service interne qui traite les données
+\end{itemize}
+
+\paragraph{Mesures de sécurité}
+\begin{itemize}
+    \item {\bf Mesure de sécurité 1:} Sauvegarde des données - existence de backup contenant les données personnelles
+    \item {\bf Mesure de sécurité 2:} Contrôle des accès - Limitation d'accès à ces données
+\end{itemize}
+
+
+
+
+
+
+\section{Difficultés rencontrées}
+
+\subsection{Préparation de la maintenance}
+
+\subsubsection{À propos du backup régulier} \label{ann:backup_regulier_difficultes}
+
+\begin{itemize}
+    \item La base de données \postgresql\ tournant dans un conteneur \docker, les commandes sont envoyées via un \inlinecode{docker exec}. Certaines options comme \inlinecode{-t} peuvent interférer avec la sortie de \pgdump\ et corrompre le fichier-dump créé au point que la restauration échoue.
+    \item L'utilisation de \cron\ nécessite de s'assurer des droits d'éxecution des différents scripts pour la catégorie \role{other} ainsi que de l'utilisation de chemins absolus tout au long du script.
+\end{itemize}
+
+
+\subsection{Opération de maintenance}
+
+\subsubsection{À propos de l'ajout d'un datamart} \label{ann:ajout_datamart_difficultes}
+
+\begin{itemize}
+    \item Au moment de réaliser ce projet, l'équipe \dbt\ est en phase de transition vers \dbt\ v2 avec le déploiement de \techno{dbt-fusion} en remplacement de \techno{dbt-core}, mais le connecteur \postgresql\ n'est pas encore disponible pour cette version. Bien que la v2 soit encore en pré-release la documentation et l'extension \vscode\ repose sur cette dernière, ce qui a créé une incompatibilité à gérer au niveau de l'installation.
+\end{itemize}
+
+
+\subsubsection{À propos des tests et documentations \dbt} \label{ann:tests_docs_dbt_difficultes}
+
+\begin{itemize}
+    \item Les tests \dbt\ ont révélé que certains champs étaient \inlinecode{NULL}. Notamment, les champs date d'expédition et date de livraison, laissant penser qu'il y a peut-être qu'une mode de retrait existe.
+    \item Dans une autre mesure, une donnée avec un \inlinecode{montant\_paye} nul semble être de l'ordre de l'erreur.
+    \item Le graphe du lignage de données dans l'UI montre un noeud \datatable{dim\_date} isolés. Après plusieurs recherches, il s'avère que ce graphe ne se base que sur les balises \inlinecode{ref()} dans les fichiers \sql\ et ne prend pas en compte les relations définies dans les fichiers \fichier{schema.yml}. Cet outil montre un DAG (\emph{Direct Acyclic Graph}) incomplet.
+\end{itemize}
+
+\subsection{Gestion des accès et procédure d'ajout d'un nouveau rôle}
+
+\subsubsection*{À propos de l'attribution des privilèges} \label{ann:attribution_privileges_difficultes}
+
+\begin{itemize}
+    \item \inlinecode{dbt build} suppriment les tables pour les récréer ensuite. Tous les privilèges accordés via \psql\ sont alors perdus dans le processus et doivent être attribuer à nouveau.
+\end{itemize}
+
+
+\subsubsection*{À propos des tests de validation} \label{ann:tests_validation_difficultes}
+
+\begin{itemize}
+    \item Certains tests \pytest\ mis en place ont demandé d'exclure des tables systèmes de \postgresql\ pour que les tests passent et ne couvrent que le champ "applicatif" de ce que j'ai mis en place.
+\end{itemize}
+
+
+\subsection{Variation d'une dimension}
+
+\subsubsection{À propos des SCD dans \dbt} \label{ann:scd_dbt_difficultes}
+
+\begin{itemize}
+    \item Les snapshots fournissent automatiquement les valeurs des champs \inlinecode{dbt\_valid\_from}, \inlinecode{dbt\_valid\_to},\inlinecode{dbt\_updated\_at} sur l'horodatage actuel. Dans le cadre de l'exercice, ces colonnes sont donc décorellés des données elles-mêmes. La requête \sql\ est de fait plus complexe que ce qui est écrit.
+\end{itemize}
+
+
+
+
+
+\pagebreak
+\section{Liens utiles}
+
+\subsection{Préparation de la maintenance}
+
+\subsubsection{À propos du suivi de service} \label{ann:suivi_de_service_liens_utiles}
+
+\begin{itemize}
+    \item SLA: \url{https://www.ibm.com/fr-fr/think/topics/service-level-agreement}
+    \item Objectifs de service: \url{https://sre.google/sre-book/service-level-objectives/}
+\end{itemize}
+
+\subsubsection{À propos du backup régulier} \label{ann:backup_regulier_liens_utiles}
+
+\begin{itemize}
+    \item \postgresql\ backup: \url{https://www.postgresql.org/docs/current/backup.html}
+    \item Data integrité: \url{https://sre.google/sre-book/data-integrity/}
+\end{itemize}
+
+
+\subsection{Opération de maintenance}
+
+\subsubsection{À propos de l'ajout d'un datamart} \label{ann:ajout_datamart_liens_utiles}
+
+\begin{itemize}
+    \item \dbt\ fundamentals (\vscode): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals-vs-code/analytics-development-lifecycle-30min/dbt-and-the-adlc?page=2}
+\end{itemize}
+
+
+\subsubsection{À propos des tests et documentation \dbt} \label{ann:tests_docs_dbt_liens_utiles}
+
+\begin{itemize}
+    \item \dbt\ fundamentals (building tests): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/data-tests-60min/building-tests?page=1}
+    \item \dbt\ fundamentals (documentation basics): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/documentation-40min/documentation-basics?page=1}
+    \item repo \dbt: \url{https://github.com/dbt-labs/dbt}
+    \item \dbt fundamentals (documentation basics): \url{https://learn.getdbt.com/learn/course/dbt-fundamentals/documentation-40min/documentation-basics?page=1}
+\end{itemize}
+
+
+\subsection{Gestion des accès et procédure d'ajout d'un nouveau rôle}
+
+\subsubsection{À propos de l'attribution des privilèges} \label{ann:attribution_privileges_liens_utiles}
+
+\begin{itemize}
+    \item Prise en main de \psql : \url{https://blog.stephane-robert.info/docs/services/bdd/relationnelles/postgresql/prise-en-main-psql/}
+    \item docs \psql "GRANT" : \url{https://docs.postgresql.fr/11/sql-grant.html}
+\end{itemize}
+
+\subsubsection{À propos des tests de validation} \label{ann:tests_validation_liens_utiles}
+
+\begin{itemize}
+    \item \pytest : parametrizing tests: \url{https://docs.pytest.org/en/stable/example/parametrize.html}
+    \item \postgresql pg\_catalog: \url{https://docs.postgresql.fr/15/catalogs.html}
+    \item \postgresql information\_schema: \url{https://www.postgresql.org/docs/current/information-schema.html}
+    \item \postgresql pg\_toast: \url{https://docs.postgresql.fr/12/storage-toast.html}
+    \item docs \dbt\ grants: \url{https://docs.getdbt.com/reference/resource-configs/grants?version=2}
+\end{itemize}
+
+\subsubsection{À propos du RGPD} \label{ann:rgpd_liens_utiles}
+
+\begin{itemize}
+    \item Règlement RGPD: \url{https://www.cnil.fr/fr/reglement-europeen-protection-donnees}
+    \item RGPD: registre des activités de traitement: \url{https://www.cnil.fr/fr/definition/registre-des-activites-de-traitement}
+\end{itemize}
+
+\subsection{Variation d'une dimension}
+
+\subsection{À propos des SCD dans \dbt} \label{ann:scd_dbt_liens_utiles}
+
+\begin{itemize}
+    \item SCD de Ralhp Kimball: \url{https://www.datacamp.com/fr/tutorial/mastering-slowly-changing-dimensions-scd}
+    \item \dbt\ snapshot: \url{https://docs.getdbt.com/docs/build/snapshots?version=2}
+\end{itemize}
+
+\subsection{Scalabilité}
+
+\subsubsection{À propos de l'ajout d'une datamart} \label{ann:ajout_dm_liens_utiles}
+
+\begin{itemize}
+    \item Datamarts: \url{https://www.data-bird.co/blog/datamart?utm_source=website&utm_medium=unknown_page&utm_campaign=general&utm_content=cta_formulaire&_utmw=1}
+    \item Datamarts: \url{https://liora.io/datamart-tout-savoir}
+    \item Approche \emph{bottom-up}: \url{https://liora.io/methode-de-kimball-tout-savoir}
+    \item \dbt: structure de projet: \url{https://docs.getdbt.com/best-practices/how-we-structure/1-guide-overview?version=2}
+\end{itemize}
+
+\subsubsection*{À propos de l'augmentation de l'espace de stockage} \label{ann:augmentation_disque_liens_utiles}
+\begin{itemize}
+    \item \postgresql : monitoring disk usage : \url{https://www.postgresql.org/docs/8.1/diskusage.html}
+    \item \postgresql : adminstrator functions: \url{https://www.postgresql.org/docs/8.1/functions-admin.html#FUNCTIONS-ADMIN-DBSIZE}
+\end{itemize}
+
+
+
+\pagebreak
+\section{Pour aller plus loin}
+
+\subsection{Préparation de la maintenance}
+
+\subsubsection{À propos du suivi de service} \label{ann:suivi_de_service_aller_plus_loin}
+
+\begin{itemize}
+    \item Mise en place d'une architecture \emph{collecteur} + \emph{visualiseur} en solution industrielle et gratuite grâce à \prometheus\ et \grafana.
+    \item Mise en place d'un système d'alertes structuré sur une fenêtre de confirmation (ex: seuil d'une métrique dépassée sur plusieurs mesures consécutives ou p95 supérieur à un seuil sur les 5 dernières minutes). \\ Technologies possibles: \sql\ + \smtplib\ ou \prometheus\ Alertmanager + \grafana\ Alerting.
+\end{itemize}
+
+\subsubsection{À propos du backup régulier} \label{ann:backup_regulier_aller_plus_loin}
+
+\begin{itemize}
+    \item \program{pgBackRest} permet la mise en place d'un back up incrémental ou différentiel.
+    \item Pour une stratégie de back-up robuste, la règle d'or est 3-2-1: 3 copies sur 2 supports différents, 1 support hors site.
+    \item Planification de retention sophistiquée: 14 backups des derniers jours + 1 backup par mois des 6 derniers mois.
+\end{itemize}
+
+\subsection{Opération de maintenance}
+
+\subsubsection{À propos de l'ajout d'un datamart} \label{ann:ajout_datamart_aller_plus_loin}
+
+\begin{itemize}
+    \item Ajout de tests dans le \fichier{schema.yml} du dossier \folder{seeds} pour détecter prématurément des fichiers-csv corrompus.
+    \item Explorer \techno{Fivetran!} pour la partie EL si les sources sont externes.
+    \item Recensement des sources dans un fichiers \fichier{sources.yaml} si elles sont externes.
+\end{itemize}
+
+
+\subsection{Gestion des accès et procédure d'ajout d'un nouveau rôle}
+
+\subsubsection{À propos de l'attribution des privilèges} \label{ann:attribution_privileges_aller_plus_loin}
+
+\begin{itemize}
+    \item L'accès granulaire à cause des données personnelles de \datatable{dim\_client} n'étant pas évident avec une BDD \postgresql, une alternative plus puissante serait de créer une vue de \datatable{dim\_client} dans laquelle les données personnelles sont supprimées ou transformées pour respecter le RGPD. Les avantages sont que cette vue intégrerait le lignage et la documentation, l'attribution de privilèges revient alors au niveau de la table entière, ce qui débloque également le \inlinecode{SELECT *} utile pour la découverte agnostique d'un modèle et enfin, il est possible de transformer les données personnelles en données impersonnelles pour que cela soit utilisable sans compromettre le respect RGPD (e.g. âge $\rightarrow$ tranche d'âge, code postal $\rightarrow$ département)
+\end{itemize}
+
+\subsubsection{À propos du RGPD} \label{ann:rgpd_aller_plus_loin}
+
+\begin{itemize}
+    \item Principe de minimisation des données (article 5.1.c): on peut toujours questionner l'utilité de la conservation des données personnelles au regard des traitements établis.
+    \item Dans ce projet, il est également question d'une vue SCD2 \datatable{scd\_client}. Cette vue répercute également les données personnelles précédemment listées, et doit être intégrés à une procédure de purge.
+\end{itemize}
+
+\subsection{Variation d'une dimension}
+
+\subsubsection*{À propos des SCD dans \dbt} \label{ann:scd_dbt_aller_plus_loin}
+
+\begin{itemize}
+    \item la documentation \dbt recommande également d'avoir un schema dédié pour les snapshots plutôt que de les mélanger aux modèles. L'argument pour cela est de pouvoir conserver l'historique même en cas de drop ou de refresh des modèles (schéma public).
+    \item Les snapshots font partie intégrante d'un projet \dbt. Comme ils contiennent l'historique, il est impératif de les inclure dans la procédure de backup. Le \datatable{scd\_client} particulièrement traite de données personnelles. Il doit donc être considéré dans la gestion des accès, ainsi que la procédure de purge mise en place en application de la RGPD.
+    \item Il est reconnu plus efficace d'ajouter une surrogate key à une table de dimension SCD2 et d'inclure la surrogate key dans la table de faits au moment du chargement d'un fait. La jointure est ainsi direct et ne nécessite pas de jointure temporelle, plus coûteuse.
+\end{itemize}
+
+
+\end{document}

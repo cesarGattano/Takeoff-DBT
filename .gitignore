@@ -216,3 +216,27 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Data
+data/
+
+# dbt
+.dbt/
+
+# Latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+*.out
+dbt_internal_packages/
+
+# vscode
+.vscode/
+
+# dbt
+dbt_packages/
+.user.yml
+package-lock.yml
+profiles.yml

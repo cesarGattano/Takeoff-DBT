@@ -1,0 +1,190 @@
+version: 2
+
+models:
+  - name: fact_commandes
+    description: "{{ doc('fact_commandes') }}"
+    columns:
+      - name: commande_id
+        description: "Identifiant unique de la commande"
+        tests:
+          - unique
+          - not_null
+      - name: client_id
+        description: "Clé étrangère vers dim_client"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_client')
+                field: client_id
+      - name: date_commande_id
+        description: "Clé étrangère vers dim_date (date de commande)"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: canal_id
+        description: "Clé étrangère vers dim_canal"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_canal')
+                field: canal_id
+      - name: statut_id
+        description: "Clé étrangère vers dim_statut_commande"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_statut_commande')
+                field: statut_id
+      - name: montant_total
+        description: "Montant total de la commande TTC"
+        tests:
+          - not_null
+      - name: frais_livraison
+        description: "Frais de livraison facturés"
+      - name: montant_remise
+        description: "Montant total des remises appliquées"
+      - name: nb_articles
+        description: "Nombre total d'articles commandés"
+      - name: delai_expedition_jours
+        description: "Délai en jours entre commande et expédition"
+      - name: delai_livraison_jours
+        description: "Délai en jours entre expédition et livraison"
+
+  - name: fact_visites
+    description: "{{ doc('fact_visites') }}"
+    columns:
+      - name: visite_id
+        description: "Identifiant unique de la visite"
+        tests:
+          - unique
+          - not_null
+      - name: client_id
+        description: "Clé étrangère vers dim_client"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_client')
+                field: client_id
+      - name: date_visite_id
+        description: "Clé étrangère vers dim_date"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: canal_id
+        description: "Clé étrangère vers dim_canal"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_canal')
+                field: canal_id
+      - name: pages_vues
+        description: "Nombre de pages consultées durant la visite"
+      - name: duree_secondes
+        description: "Durée de la visite en secondes"
+      - name: duree_minutes
+        description: "Durée de la visite en minutes"
+      - name: a_converti
+        description: "True si la visite a abouti à une commande"
+      - name: device
+        description: "Type d'appareil utilisé : desktop, mobile, tablet"
+
+  - name: fact_retours
+    description: "{{ doc('fact_retours') }}"
+    columns:
+      - name: retour_id
+        description: "Identifiant unique du retour"
+        tests:
+          - unique
+          - not_null
+      - name: commande_id
+        description: "Clé étrangère vers dim_commande"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_commandes')
+                field: commande_id
+      - name: date_commande_id
+        description: "Clé étrangère vers dim_date (date de commande)"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: date_expedition_id
+        description: "Clé étrangère vers dim_date (date d'expédition)"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id                
+      - name: date_livraison_id
+        description: "Clé étrangère vers dim_date (date de livraison)"
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: date_retour_id
+        description: "Clé étrangère vers dim_date (date de retour)"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_id
+      - name: client_id
+        description: "Clé étrangère vers dim_client"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_client')
+                field: client_id
+      - name: produit_id
+        description: "Clé étrangère vers dim_produit"
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_produit')
+                field: produit_id
+      - name: motif
+        description: "Motif du retour"
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Défaut', "Changement d''avis", 'Erreur', 'Direct']
+      - name: montant_paye
+        description: "Montant payé de la commande TTC"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: montant_rembourse
+        description: "Montant remboursé de la commande"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
+      - name: delai_retour_jours
+        description: "Délais de retour en jours"
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "> 0"
